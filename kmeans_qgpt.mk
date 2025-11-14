@@ -6,8 +6,8 @@ K_CLUSTERS ?= 5
 INCLUDE_DIVERSE ?= true
 MAX_INSTANCES_PER_CLUSTER ?= 10
 USE_HEADER_AUGMENTATION ?= true
-# KMEANS_QGPT_TEST_DATASETS := e2ewtq feta ottqa mimo_en mimo_ch
-KMEANS_QGPT_TEST_DATASETS := e2ewtq  
+KMEANS_QGPT_TEST_DATASETS := e2ewtq feta ottqa mimo_en mimo_ch
+# KMEANS_QGPT_TEST_DATASETS := e2ewtq  
 KMEANS_QGPT_GPU_ID := 2
 
 # Determine corpus path based on include_diverse setting
@@ -33,50 +33,20 @@ KMEANS_CORPUS_PATH := corpus/kmeans_cluster_qgpt_k$(K_CLUSTERS)$(DIVERSE_SUFFIX)
 # Generate synthetic questions using K-means clustering (semantic clustering approach)
 kmeans_cluster_qgpt_data:
 	@echo "Generating K-means QGPT data with k=$(K_CLUSTERS) clusters (include_diverse=$(INCLUDE_DIVERSE), max_instances=$(MAX_INSTANCES_PER_CLUSTER), header_aug=$(USE_HEADER_AUGMENTATION))..."
-# 	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
-# 	    --input_file dataset/test/mimo_ch/table.jsonl \
-# 	    --output_dir $(KMEANS_CORPUS_PATH)/test/mimo_ch \
-# 	    --k_clusters $(K_CLUSTERS) \
-# 	    $(DIVERSE_FLAG) \
-# 	    $(HEADER_AUG_FLAG) \
-# 	    $(HEADER_AUG_FLAG) \
-# 	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
-# 	    --sglang_url http://localhost:8002 \
-# 	    --temperature 0.4 \
-# 	    --batch_size 64
-# 	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
-# 	    --input_file dataset/test/mimo_en/table.jsonl \
-# 	    --output_dir $(KMEANS_CORPUS_PATH)/test/mimo_en \
-# 	    --k_clusters $(K_CLUSTERS) \
-# 	    $(DIVERSE_FLAG) \
-# 	    $(HEADER_AUG_FLAG) \
-# 	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
-# 	    --sglang_url http://localhost:8002 \
-# 	    --temperature 0.4 \
-# 	    --batch_size 100
-# 	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
-# 	    --input_file dataset/test/ottqa/table.jsonl \
-# 	    --output_dir $(KMEANS_CORPUS_PATH)/test/ottqa \
-# 	    --k_clusters $(K_CLUSTERS) \
-# 	    $(DIVERSE_FLAG) \
-# 	    $(HEADER_AUG_FLAG) \
-# 	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
-# 	    --sglang_url http://localhost:8002 \
-# 	    --temperature 0.4 \
-# 	    --batch_size 100
-# 	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
-# 	    --input_file dataset/test/feta/table.jsonl \
-# 	    --output_dir $(KMEANS_CORPUS_PATH)/test/feta \
-# 	    --k_clusters $(K_CLUSTERS) \
-# 	    $(DIVERSE_FLAG) \
-# 	    $(HEADER_AUG_FLAG) \
-# 	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
-# 	    --sglang_url http://localhost:8002 \
-# 	    --temperature 0.4 \
-# 	    --batch_size 100
 	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
-	    --input_file dataset/test/e2ewtq/table.jsonl \
-	    --output_dir $(KMEANS_CORPUS_PATH)/test/e2ewtq \
+	    --input_file dataset/test/mimo_ch/table.jsonl \
+	    --output_dir $(KMEANS_CORPUS_PATH)/test/mimo_ch \
+	    --k_clusters $(K_CLUSTERS) \
+	    $(DIVERSE_FLAG) \
+	    $(HEADER_AUG_FLAG) \
+	    $(HEADER_AUG_FLAG) \
+	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
+	    --sglang_url http://localhost:8002 \
+	    --temperature 0.4 \
+	    --batch_size 64
+	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
+	    --input_file dataset/test/mimo_en/table.jsonl \
+	    --output_dir $(KMEANS_CORPUS_PATH)/test/mimo_en \
 	    --k_clusters $(K_CLUSTERS) \
 	    $(DIVERSE_FLAG) \
 	    $(HEADER_AUG_FLAG) \
@@ -84,6 +54,36 @@ kmeans_cluster_qgpt_data:
 	    --sglang_url http://localhost:8002 \
 	    --temperature 0.4 \
 	    --batch_size 100
+	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
+	    --input_file dataset/test/ottqa/table.jsonl \
+	    --output_dir $(KMEANS_CORPUS_PATH)/test/ottqa \
+	    --k_clusters $(K_CLUSTERS) \
+	    $(DIVERSE_FLAG) \
+	    $(HEADER_AUG_FLAG) \
+	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
+	    --sglang_url http://localhost:8002 \
+	    --temperature 0.4 \
+	    --batch_size 100
+	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
+	    --input_file dataset/test/feta/table.jsonl \
+	    --output_dir $(KMEANS_CORPUS_PATH)/test/feta \
+	    --k_clusters $(K_CLUSTERS) \
+	    $(DIVERSE_FLAG) \
+	    $(HEADER_AUG_FLAG) \
+	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
+	    --sglang_url http://localhost:8002 \
+	    --temperature 0.4 \
+	    --batch_size 100
+# 	uv run -m experiment_module.cycle_training.scripts.generate_synthetic_questions_with_kmeans \
+# 	    --input_file dataset/test/e2ewtq/table.jsonl \
+# 	    --output_dir $(KMEANS_CORPUS_PATH)/test/e2ewtq \
+# 	    --k_clusters $(K_CLUSTERS) \
+# 	    $(DIVERSE_FLAG) \
+# 	    $(HEADER_AUG_FLAG) \
+# 	    --max_instances_per_cluster $(MAX_INSTANCES_PER_CLUSTER) \
+# 	    --sglang_url http://localhost:8002 \
+# 	    --temperature 0.4 \
+# 	    --batch_size 100
 
 # Generate synthetic questions for training data
 kmeans_cluster_qgpt_data_train:
