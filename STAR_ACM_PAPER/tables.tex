@@ -1,0 +1,210 @@
+\begin{table*}[t]
+\centering
+\small
+% \renewcommand{\arraystretch}{1.1}
+\begin{tabular}{
+    l
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+}
+\specialrule{1pt}{0.4ex}{0.4ex}
+\multirow{2}{*}[-1ex]{\textbf{Method}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (en)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{OTTQA}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{FetaQA}} &
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
+% 下面用 \cmidrule(lr){start-end} 控制斷線
+\cmidrule(l{-1pt}r{9pt}){2-4}   % Mimo(ch)
+\cmidrule(l{-1pt}r{9pt}){5-7}   % Mimo(en)
+\cmidrule(l{-1pt}r{9pt}){8-10}  % ottqa
+\cmidrule(l{-1pt}r{9pt}){11-13} % feta
+\cmidrule(l{-1pt}r{4pt}){14-16} % e2ewtq
+& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\specialrule{0.8pt}{0.4ex}{1.5pt}
+Raw BM25 & 13.71 & 18.55 & 20.67 & 43.37 & 63.96 & 73.32 & 22.40 & 36.95 & 43.45 & 30.5 & 41.14 & 46.63 & 50.62 & 77.18 & 83.40 \\
+HT-Sparse & 28.23 & 47.88 & 57.26 & 54.76 & 75.97 & 83.15 & 40.56 & 60.98 & 68.02 & 40.19 & 54.87 & 60.96 & 59.75 & 82.57 & 86.72 \\
+\specialrule{1pt}{0.5pt}{1.5pt}
+& \textbf{\textcolor{green!60!black}{+14.52}} & \textbf{\textcolor{green!60!black}{+29.33}} & \textbf{\textcolor{green!60!black}{+36.59}} &
+\textbf{\textcolor{green!60!black}{+11.39}} & \textbf{\textcolor{green!60!black}{+12.01}} & \textbf{\textcolor{green!60!black}{+9.83}} &
+\textbf{\textcolor{green!60!black}{+18.16}} & \textbf{\textcolor{green!60!black}{+24.03}} & \textbf{\textcolor{green!60!black}{+24.57}} &
+\textbf{\textcolor{green!60!black}{+9.69}} & \textbf{\textcolor{green!60!black}{+13.73}} & \textbf{\textcolor{green!60!black}{+14.33}} &
+\textbf{\textcolor{green!60!black}{+9.13}} & \textbf{\textcolor{green!60!black}{+5.39}} & \textbf{\textcolor{green!60!black}{+3.32}} \\
+\\
+\specialrule{1pt}{0.4ex}{0.4ex}
+\multirow{2}{*}[-1ex]{\textbf{Method}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (en)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{OTTQA}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{FetaQA}} &
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
+% 下面用 \cmidrule(lr){start-end} 控制斷線
+\cmidrule(l{-1pt}r{9pt}){2-4}   % Mimo(ch)
+\cmidrule(l{-1pt}r{9pt}){5-7}   % Mimo(en)
+\cmidrule(l{-1pt}r{9pt}){8-10}  % ottqa
+\cmidrule(l{-1pt}r{9pt}){11-13} % feta
+\cmidrule(l{-1pt}r{4pt}){14-16} % e2ewtq
+& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\specialrule{0.8pt}{0.4ex}{1.5pt}
+Raw BGE-M3 & 44.58 & 67.47 & 74.98 & 48.66 & 74.48 & 77.70 & 48.33 & 76.02 & 84.04 & 29.26 & 45.03 & 53.12 & \textbf{68.05} & \uline{85.48} & \uline{90.87} \\
+HT-Dense & 43.85 & 67.74 & 75.81 & 48.82 & 72.69 & 79.56 & 48.37 & 74.70 & 83.87 & 35.40 & \uline{54.97} & \uline{62.91} & 60.99 & 85.47 & 90.45 \\
+\specialrule{1pt}{0.5pt}{1.5pt}
+& \textcolor{red!80!black}{\textbf{-0.73}} & \textcolor{green!60!black}{\textbf{+0.27}} & \textcolor{green!60!black}{\textbf{+0.83}} & \textcolor{green!60!black}{\textbf{+0.16}} & \textcolor{red!80!black}{\textbf{-1.79}} & \textcolor{green!60!black}{\textbf{+1.86}} & \textcolor{green!60!black}{\textbf{+0.04}} & \textcolor{red!80!black}{\textbf{-1.32}} & \textcolor{red!80!black}{\textbf{-0.17}} & \textcolor{green!60!black}{\textbf{+6.14}} & \textcolor{green!60!black}{\textbf{+9.89}} & \textcolor{green!60!black}{\textbf{+9.79}} & \textcolor{red!80!black}{\textbf{-7.06}} & \textcolor{red!80!black}{\textbf{-0.01}} & \textcolor{red!80!black}{\textbf{-0.42}} \\
+\\
+\end{tabular}
+\caption{}
+\label{tab:retrieval-results}
+\end{table*}
+
+
+
+\begin{table*}[t]
+\centering
+\small
+% \renewcommand{\arraystretch}{1.1}
+\begin{tabular}{
+    l
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+}
+\specialrule{1pt}{0.4ex}{0.4ex}
+\multirow{2}{*}[-1ex]{\textbf{Method}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (en)}} &+
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{OTTQA}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{FetaQA}} &
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
+% 下面用 \cmidrule(lr){start-end} 控制斷線
+\cmidrule(l{-1pt}r{9pt}){2-4}   % Mimo(ch)
+\cmidrule(l{-1pt}r{9pt}){5-7}   % Mimo(en)
+\cmidrule(l{-1pt}r{9pt}){8-10}  % ottqa
+\cmidrule(l{-1pt}r{9pt}){11-13} % feta
+\cmidrule(l{-1pt}r{4pt}){14-16} % e2ewtq
+& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\specialrule{0.8pt}{0.4ex}{1.5pt}
+Raw BGE-M3 & 44.58 & 67.47 & 74.98 & 48.66 & 74.48 & 77.70 & 48.33 & 76.02 & 84.04 & 29.26 & 45.03 & 53.12 & \textbf{68.05} & \uline{85.48} & \uline{90.87} \\
+HT-Dense & 43.85 & 67.74 & 75.81 & 48.82 & 72.69 & 79.56 & 48.37 & 74.70 & 83.87 & 35.40 & \uline{54.97} & \uline{62.91} & 60.99 & 85.47 & 90.45 \\
+\specialrule{1pt}{0.5pt}{1.5pt}
+& \textcolor{red!80!black}{\textbf{-0.73}} & \textcolor{green!60!black}{\textbf{+0.27}} & \textcolor{green!60!black}{\textbf{+0.83}} & \textcolor{green!60!black}{\textbf{+0.16}} & \textcolor{red!80!black}{\textbf{-1.79}} & \textcolor{green!60!black}{\textbf{+1.86}} & \textcolor{green!60!black}{\textbf{+0.04}} & \textcolor{red!80!black}{\textbf{-1.32}} & \textcolor{red!80!black}{\textbf{-0.17}} & \textcolor{green!60!black}{\textbf{+6.14}} & \textcolor{green!60!black}{\textbf{+9.89}} & \textcolor{green!60!black}{\textbf{+9.79}} & \textcolor{red!80!black}{\textbf{-7.06}} & \textcolor{red!80!black}{\textbf{-0.01}} & \textcolor{red!80!black}{\textbf{-0.42}} \\
+\end{tabular}
+\caption{Retrieval performance (Recall@K) across multiple datasets.}
+\label{tab:retrieval-results}
+\end{table*}
+
+
+\begin{table*}[t]
+\centering
+\small
+% \renewcommand{\arraystretch}{1.1}
+\begin{tabular}{
+    l
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+}
+\specialrule{1pt}{0.4ex}{0.4ex}
+\multirow{2}{*}[-1ex]{\textbf{Method}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (en)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{OTTQA}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{FetaQA}} &
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
+% 下面用 \cmidrule(lr){start-end} 控制斷線
+\cmidrule(l{-1pt}r{9pt}){2-4}   % Mimo(ch)
+\cmidrule(l{-1pt}r{9pt}){5-7}   % Mimo(en)
+\cmidrule(l{-1pt}r{9pt}){8-10}  % ottqa
+\cmidrule(l{-1pt}r{9pt}){11-13} % feta
+\cmidrule(l{-1pt}r{4pt}){14-16} % e2ewtq
+& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\specialrule{0.8pt}{0.4ex}{1.5pt}
+Raw Sparse & 13.71 & 18.55 & 20.67 & 43.37 & 63.96 & 73.32 & 22.40 & 36.95 & 43.45 & 30.5 & 41.14 & 46.63 & 50.62 & 77.18 & 83.40 \\
+Raw Dense & 44.58 & 67.47 & 74.98 & 48.66 & 74.48 & 77.70 & 48.33 & 76.02 & 84.04 & 29.26 & 45.03 & 53.12 & \textbf{68.05} & \uline{85.48} & \uline{90.87} \\
+\specialrule{0.5pt}{1.5pt}{1.5pt}
+HT-Sparse & 28.23 & 47.88 & 57.26 & \uline{54.76} & \uline{75.97} & \uline{83.15} & 40.56 & 60.98 & 68.02 & \uline{40.19} & 54.87 & 60.96 & 59.75 & 82.57 & 86.72 \\
+HT-Dense & 43.85 & 67.74 & 75.81 & 48.82 & 72.69 & 79.56 & 48.37 & 74.70 & 83.87 & 35.40 & \uline{54.97} & \uline{62.91} & 60.99 & 85.47 & 90.45 \\
+\specialrule{0.5pt}{1.5pt}{1.5pt}
+QGpT & \uline{50.60} & \uline{75.00} & \uline{81.45} & 50.66 & 72.35 & 80.80 & \uline{51.45} & \uline{78.14} & \uline{86.68} & 33.95 & 50.80 & 57.86 & 41.49 & 65.98 & 72.61 \\
+\specialrule{0.5pt}{1.5pt}{1.5pt}
+\textbf{BiFuser (Ours)} & \textbf{57.86} & \textbf{81.95} & \textbf{86.29} & \textbf{65.52} & \textbf{85.49} & \textbf{90.64} & \textbf{56.73} & \textbf{80.67} & \textbf{87.90} & \textbf{41.68} & \textbf{60.16} & \textbf{67.60} & \uline{63.90} & \textbf{90.46} & \textbf{94.19} \\
+\specialrule{1pt}{0.5pt}{1.5pt}
+\end{tabular}
+\caption{Retrieval performance (Recall@K) across multiple datasets.}
+\label{tab:retrieval-results}
+\end{table*}
+
+
+
+\begin{table*}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{
+    l
+    c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+    @{\hskip 10pt} 
+    c@{\hskip 5pt}c@{\hskip 5pt}c
+}
+\specialrule{1pt}{0.4ex}{0.4ex}
+\multirow{2}{*}[-1ex]{\textbf{Method}} &
+\multirow{2}{*}[-1ex]{\textbf{Aug.}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{Mimo (en)}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{OTTQA}} &
+\multicolumn{3}{c@{\hskip 10pt}}{\textbf{FetaQA}} &
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
+\cmidrule(l{-1pt}r{9pt}){3-5}   % Mimo(ch)
+\cmidrule(l{-1pt}r{9pt}){6-8}   % Mimo(en)
+\cmidrule(l{-1pt}r{9pt}){9-11}  % ottqa
+\cmidrule(l{-1pt}r{9pt}){12-14} % feta
+\cmidrule(l{-1pt}r{4pt}){15-17} % e2ewtq
+& & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\specialrule{0.8pt}{0.4ex}{1.5pt}
+BM25 & - & 13.71 & 18.55 & 20.67 & 43.37 & 63.96 & 73.32 & 22.40 & 36.95 & 43.45 & 30.5 & 41.14 & 46.63 & 50.62 & 77.18 & 83.40 \\
+\;+HT & Q & 28.23 & 47.88 & 57.26 & \uline{54.76} & \uline{75.97} & \uline{83.15} & 40.56 & 60.98 & 68.02 & \uline{40.19} & 54.87 & 60.96 & 59.75 & 82.57 & 86.72 \\
+
+\specialrule{0.5pt}{1.5pt}{1.5pt}
+
+BGE-m3 & - & 44.58 & 67.47 & 74.98 & 48.66 & 74.48 & 77.70 & 48.33 & 76.02 & 84.04 & 29.26 & 45.03 & 53.12 & \textbf{68.05} & \uline{85.48} & \uline{90.87} \\
+\;+HT & Q & 43.85 & 67.74 & 75.81 & 48.82 & 72.69 & 79.56 & 48.37 & 74.70 & 83.87 & 35.40 & \uline{54.97} & \uline{62.91} & 60.99 & 85.47 & 90.45 \\
+
+\specialrule{0.5pt}{1.5pt}{1.5pt}
+
+QGpT & C & \uline{50.60} & \uline{75.00} & \uline{81.45} & 50.66 & 72.35 & 80.80 & \uline{51.45} & \uline{78.14} & \uline{86.68} & 33.95 & 50.80 & 57.86 & 41.49 & 65.98 & 72.61 \\
+\specialrule{0.5pt}{1.5pt}{1.5pt}
+\textbf{BiFuser (Ours)} & \textbf{Q+C} & \textbf{57.86} & \textbf{81.95} & \textbf{86.29} & \textbf{65.52} & \textbf{85.49} & \textbf{90.64} & \textbf{56.73} & \textbf{80.67} & \textbf{87.90} & \textbf{41.68} & \textbf{60.16} & \textbf{67.60} & \uline{63.90} & \textbf{90.46} & \textbf{94.19} \\
+\specialrule{1pt}{0.5pt}{1.5pt}
+\end{tabular}
+\caption{Retrieval performance (Recall@K) across multiple datasets. Aug.: Augmentation strategy (Q: Query-side, C: Corpus-side, Q+C: Bi-directional).}
+\label{tab:retrieval-results}
+\end{table*}
