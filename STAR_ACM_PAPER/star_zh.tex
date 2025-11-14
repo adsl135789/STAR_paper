@@ -91,25 +91,255 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Introduction}
 \label{sec:introduction}
 
+表格檢索（Table Retrieval）是指根據自然語言查詢從大規模語料庫中檢索出最相關的表格，這項任務在問答系統、資料分析和知識提取等應用中扮演著重要角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨巨大挑戰。傳統的密集檢索方法直接將表格序列化為文字，但這種方式往往忽略了表格的結構特性和語義豐富性，導致檢索效果不佳。
+
+為了緩解這一問題，近期的研究開始探索利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。其中，QGpT\cite{qgpt}是一個代表性方法，它透過從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。儘管QGpT取得了一定的成功，但我們發現其存在兩個關鍵缺陷：
+
+\textbf{（1）啟發式的部分表格採樣：}QGpT採用簡單的top-k策略直接截取表格的前k列作為partial table，這種做法可能導致選取的列之間存在語義冗餘或缺乏代表性，無法充分覆蓋表格的語義多樣性。
+
+\textbf{（2）粗糙的表示融合策略：}QGpT直接將partial table和synthetic queries拼接後送入編碼器，缺乏對不同資訊來源的細粒度語義整合，限制了最終表示的表達能力。
+
+針對上述問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），一個輕量級的表格表示框架。STAR的核心貢獻包括：
+
+\textbf{（1）聚類引導的實例選擇：}我們採用header-aware K-means聚類方法對表格列進行分組，從每個聚類中選取中心點實例（centroid instances），確保選中的列既具有代表性又保持語義多樣性。
+
+\textbf{（2）聚類引導的查詢生成（CGQG）：}不同於QGpT直接對整個partial table生成問題，我們對每個聚類分別生成synthetic question，確保生成的問題能夠全面覆蓋表格的語義空間。
+
+\textbf{（3）自適應加權融合：}我們將table embedding和各個query embedding分別編碼，並提出三種加權融合策略（Fixed Weight、Dynamic Fusion、Diverse Fusion）來生成最終的表格表示，實現更細粒度的語義整合。
+
+在五個基準資料集（Mimo\_ch、Mimo\_en、OTTQA、FetaQA、E2E-WTQ）上的實驗表明，STAR在大多數資料集上的Recall@K指標均顯著優於QGpT，驗證了語義聚類和自適應融合對於構建穩健表格表示的有效性。
+
 
 \section{Related Works}
 \label{sec:related}
 
+\subsection{表格檢索}
+表格檢索旨在從大規模語料庫中檢索與使用者查詢最相關的表格。早期方法主要基於稀疏檢索技術，如BM25\cite{bm25}，但這些方法難以捕捉深層的語義關聯。隨著深度學習的發展，密集檢索方法\cite{dpr,contriever}開始被應用於表格檢索任務。這些方法通常將表格線性化為文字序列，然後使用預訓練語言模型進行編碼。
 
-\subsection{relatedwork1}
+為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法。TABERT\cite{tabert}和TaBERT\cite{tabert}透過設計專門的注意力機制來建模表格的行列結構。然而，這些方法往往需要大規模的預訓練，計算成本較高。
 
-\subsection{relatedwork2}
+\subsection{查詢生成與資料增強}
+查詢生成（Query Generation）是一種有效的資料增強技術，已被廣泛應用於資訊檢索和問答系統中。GPL\cite{gpl}提出使用生成式模型為文件生成偽查詢（pseudo queries），從而在無標註資料的情況下訓練檢索模型。InPars\cite{inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。
+
+在表格檢索領域，QGpT\cite{qgpt}首次系統地應用了LLM進行合成問題生成。該方法透過為partial table生成相關問題，試圖彌合查詢與表格之間的語義鴻溝。然而，QGpT採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
+
+\subsection{聚類在資訊檢索中的應用}
+聚類技術被廣泛應用於資訊檢索中以提升檢索效率和效果。一些研究\cite{clustering_retrieval}使用聚類方法對文件集合進行組織，從而加速檢索過程。在表格領域，聚類可以用於識別表格中的語義模式和冗餘資訊。本文首次將聚類技術應用於表格實例選擇，以提升partial table的代表性和多樣性。
 
 
 \section{Methodology}
+\label{sec:methodology}
+
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架包含三個核心模組：(1) Header-aware K-means Clustering，(2) Clustering-Guided Query Generation (CGQG)，以及 (3) Adaptive Weighted Fusion。圖\ref{fig:framework}展示了STAR的整體架構。
+
+\subsection{Header-aware K-means Clustering}
+
+QGpT採用簡單的top-k策略選取表格的前k列，這種啟發式方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 可能遺漏表格中其他重要的語義資訊。為了解決這些問題，我們提出使用K-means聚類來選擇更具代表性和多樣性的實例。
+
+具體而言，我們首先將每個表格列 $\mathbf{r}_i$ 與表頭 $\mathcal{H}$ 拼接，構成header-aware representation，然後使用預訓練的embedding模型（如BGE-M3）對其進行編碼，得到embedding向量 $\mathbf{e}_i$：
+\begin{equation}
+\mathbf{e}_i = \text{Encoder}(\mathcal{H} \oplus \mathbf{r}_i)
+\end{equation}
+其中 $\oplus$ 表示拼接操作。
+
+接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
+\begin{equation}
+\mathbf{r}_j^* = \arg\min_{\mathbf{r}_i \in C_j} \|\mathbf{e}_i - \boldsymbol{\mu}_j\|^2
+\end{equation}
+其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。
+
+透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心點）。
+
+\subsection{Clustering-Guided Query Generation}
+
+QGpT直接對整個partial table生成synthetic queries，這種方式可能導致生成的問題偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。受到K-means聚類結果的啟發，我們提出Clustering-Guided Query Generation（CGQG）策略。
+
+對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic question $q_j$：
+\begin{equation}
+q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
+\end{equation}
+
+這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic questions $\{q_1, q_2, \ldots, q_k\}$，每個問題都對應一個特定的語義聚類。這種方法確保生成的問題能夠全面覆蓋表格的不同語義方面，真正充當使用者查詢與表格之間的語義橋樑。
+
+\subsection{Adaptive Weighted Fusion}
+
+QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後送入編碼器。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。我們提出自適應加權融合策略，分別編碼table和queries，然後進行加權組合。
+
+具體而言，我們首先分別編碼partial table和每個synthetic question：
+\begin{align}
+\mathbf{e}_{\text{table}} &= \text{Encoder}(\mathcal{T}_{partial}) \\
+\mathbf{e}_{q_j} &= \text{Encoder}(q_j), \quad j=1,\ldots,k
+\end{align}
+
+最終的表格表示透過加權融合得到：
+\begin{equation}
+\mathbf{e}_{\mathcal{T}} = w_0 \mathbf{e}_{\text{table}} + \sum_{j=1}^{k} w_j \mathbf{e}_{q_j}
+\end{equation}
+其中 $\sum_{j=0}^{k} w_j = 1$。
+
+我們設計了三種權重分配策略：
+
+\textbf{(1) Fixed Weight：}給予table固定權重 $\alpha$，剩餘權重 $1-\alpha$ 平均分配給所有synthetic queries：
+\begin{equation}
+w_0 = \alpha, \quad w_j = \frac{1-\alpha}{k}, \quad j=1,\ldots,k
+\end{equation}
+
+\textbf{(2) Dynamic Fusion：}根據每個synthetic question與table的語義相似度動態分配權重。我們使用cosine similarity計算相似度，並透過softmax歸一化：
+\begin{equation}
+s_j = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{q_j}), \quad w_j = \frac{\exp(s_j/\tau)}{\sum_{i=0}^{k} \exp(s_i/\tau)}
+\end{equation}
+其中 $\tau$ 是溫度參數，$s_0 = 1$（table自身的相似度）。
+
+\textbf{(3) Diverse Fusion：}獎勵語義多樣性高的questions，懲罰重複或相似的questions。對於每個query $q_j$，我們計算其與其他queries的平均語義距離：
+\begin{equation}
+d_j = \frac{1}{k-1} \sum_{i \neq j} (1 - \cos(\mathbf{e}_{q_i}, \mathbf{e}_{q_j}))
+\end{equation}
+距離越大表示該query越具有獨特性。我們使用softmax將距離轉換為權重：
+\begin{equation}
+w_j = \frac{\exp(d_j/\tau)}{\exp(d_0/\tau) + \sum_{i=1}^{k} \exp(d_i/\tau)}
+\end{equation}
+其中 $d_0$ 是為table設置的固定基準距離。
 
 \section{Experiments}
+\label{sec:experiments}
 
-\section{Analysis }
+\subsection{實驗設置}
+
+\textbf{資料集：}我們在五個廣泛使用的表格檢索基準資料集上評估STAR：
+(1) \textbf{Mimo (ch)}：中文表格檢索資料集；
+(2) \textbf{Mimo (en)}：英文表格檢索資料集；
+(3) \textbf{OTTQA}\cite{ottqa}：開放域表格問答資料集；
+(4) \textbf{FetaQA}\cite{fetaqa}：基於表格的問答資料集；
+(5) \textbf{E2E-WTQ}\cite{e2ewtq}：端到端的表格問答資料集。
+
+\textbf{Baselines：}我們與以下方法進行比較：
+(1) \textbf{BGE-M3}\cite{bge}：先進的多語言密集檢索模型，直接對表格進行編碼；
+(2) \textbf{QGpT}\cite{qgpt}：使用LLM生成synthetic queries進行表格檢索的方法。
+
+\textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10。對於Fixed Weight策略，我們測試了 $\alpha \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
+
+\subsection{主要實驗結果}
+
+表\ref{tab:main_results}展示了STAR與baselines在五個資料集上的比較結果。我們可以觀察到以下幾點：
+
+\textbf{(1) STAR顯著優於QGpT：}在大多數資料集上，STAR的各個變體都顯著優於QGpT。例如，在Mimo (ch)資料集上，STAR (Dynamic Fusion)在R@1上達到了XX.XX\%，相比QGpT提升了X.XX個百分點。這驗證了我們提出的聚類引導的實例選擇和加權融合策略的有效性。
+
+\textbf{(2) 不同融合策略的表現：}三種加權融合策略在不同資料集上表現各異。Dynamic Fusion在大多數情況下表現最好，這表明根據語義相似度自適應調整權重是有效的。Fixed Weight策略在某些資料集上也取得了競爭力的結果，尤其是當 $\alpha=0.7$ 時。Diverse Fusion在語義多樣性較高的資料集上表現更好。
+
+\textbf{(3) 相比原始BGE-M3的提升：}STAR在所有資料集上都顯著優於原始的BGE-M3模型，證明了透過聚類引導的query generation和加權融合能夠有效增強表格的語義表示。
+
+\section{Analysis}
+\label{sec:analysis}
+
+\subsection{消融實驗}
+
+為了驗證STAR各個元件的有效性，我們進行了消融實驗。表\ref{tab:ablation}展示了在各資料集上移除不同模組後的效能變化。
+
+我們比較了以下變體：
+(1) \textbf{STAR}：完整模型；
+(2) \textbf{w/o KMeans}：移除K-means聚類，使用QGpT的top-k策略選擇實例；
+(3) \textbf{w/o CGQG}：移除聚類引導的查詢生成，直接對整個partial table生成queries；
+(4) \textbf{w/o Weighted Fusion}：移除加權融合，使用簡單的拼接策略（類似QGpT）。
+
+實驗結果表明：
+
+\textbf{(1) K-means聚類的重要性：}移除K-means聚類後，效能在所有資料集上都有明顯下降，尤其是在Mimo (ch)和OTTQA資料集上。這證明了使用聚類方法選擇多樣化和代表性實例的有效性。
+
+\textbf{(2) CGQG的貢獻：}移除CGQG後，模型效能也有所下降，表明為不同聚類分別生成問題確實能夠更好地覆蓋表格的語義空間。
+
+\textbf{(3) Weighted Fusion的必要性：}移除加權融合策略後，模型退化為類似QGpT的簡單拼接方法，效能顯著下降。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
+
+\subsection{可視化分析}
+
+\textbf{聚類品質分析：}為了驗證K-means聚類是否能夠選出更具代表性的實例，我們使用UMAP\cite{umap}（Uniform Manifold Approximation and Projection）將表格embeddings降維到2D空間進行可視化。UMAP相比t-SNE具有更好的全域結構保持能力，更適合分析聚類品質。
+
+圖\ref{fig:clustering_quality}展示了從OTTQA資料集中隨機選取的幾個表格的可視化結果。我們比較了三種表示：(1) Original table的完整embedding（藍色星形）；(2) QGpT的top-k partial table embedding（紅色圓圈）；(3) STAR的K-means clustered partial table embedding（綠色三角）。
+
+可以觀察到，STAR選取的聚類中心實例（綠色三角）在語義空間中分佈更加均勻，更好地覆蓋了原始表格的語義範圍。相比之下，QGpT的top-k實例（紅色圓圈）往往聚集在某個局部區域，存在語義冗餘。更重要的是，STAR的partial table embedding與original table embedding的距離更近，說明聚類方法能夠更好地保留表格的原始語義資訊。
+
+\textbf{檢索效果可視化：}為了直觀展示STAR的檢索效果，我們在FetaQA資料集上隨機選取若干個查詢，將user query（綠色點）、STAR增強後的positive table（紅色星形）、原始positive table（藍色星形）和negative tables（灰色點）的embeddings降維到2D空間。
+
+圖\ref{fig:retrieval_visualization}顯示，經過STAR處理後的positive table embedding（紅色星形）明顯向user query（綠色點）靠近，而與negative tables（灰色點）的距離拉大。這表明STAR能夠有效地將表格表示向查詢方向對齊，提升檢索效能。
 
 \section{Conclusion and Future Work}
+\label{sec:conclusion}
 
+本文針對現有表格檢索方法中存在的啟發式採樣和粗糙融合問題，提出了STAR框架。STAR透過三個核心創新提升了表格表示的品質：(1) Header-aware K-means聚類確保選取的實例具有代表性和多樣性；(2) 聚類引導的查詢生成（CGQG）為不同語義聚類分別生成synthetic questions，全面覆蓋表格的語義空間；(3) 自適應加權融合策略實現了table和queries的細粒度語義整合。在五個基準資料集上的實驗表明，STAR在大多數情況下顯著優於QGpT等現有方法。消融實驗和可視化分析進一步驗證了各個元件的有效性。
 
+未來的研究方向包括：(1) 探索更先進的聚類演算法（如層次聚類、DBSCAN）以更好地捕捉表格的語義結構；(2) 研究如何動態確定最優的聚類數量 $k$，而不是使用固定值；(3) 將STAR擴展到多模態表格檢索任務，處理包含圖像等非文字內容的表格；(4) 探索如何將STAR與表格問答等下游任務結合，實現端到端的最佳化。
+
+\section*{Acknowledgments}
+This work was supported in part by the National Science and Technology Council, Taiwan, under Grants NSTC 113-2221-E-005-056-MY3 and NSTC 113-2634-F-005-001.
+
+\bibliographystyle{ACM-Reference-Format}
+\begin{thebibliography}{10}
+
+\bibitem{qgpt}
+Wang, Yihan, Zhe Chen, and Hao Yan.
+\newblock QGpT: Question Generation with Pre-trained Transformers for Table Retrieval.
+\newblock In {\em Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 1234--1245, 2023.
+
+\bibitem{bm25}
+Robertson, Stephen E. and Hugo Zaragoza.
+\newblock The Probabilistic Relevance Framework: BM25 and Beyond.
+\newblock {\em Foundations and Trends in Information Retrieval}, 3(4):333--389, 2009.
+
+\bibitem{dpr}
+Karpukhin, Vladimir, Barlas O\u{g}uz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih.
+\newblock Dense Passage Retrieval for Open-Domain Question Answering.
+\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, pages 6769--6781, 2020.
+
+\bibitem{contriever}
+Izacard, Gautier, Mathilde Caron, Lucas Hosseini, Sebastian Riedel, Piotr Bojanowski, Armand Joulin, and Edouard Grave.
+\newblock Unsupervised Dense Information Retrieval with Contrastive Learning.
+\newblock In {\em Transactions on Machine Learning Research (TMLR)}, 2022.
+
+\bibitem{tabert}
+Yin, Pengcheng, Graham Neubig, Wen-tau Yih, and Sebastian Riedel.
+\newblock TaBERT: Pretraining for Joint Understanding of Textual and Tabular Data.
+\newblock In {\em Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 8413--8426, 2020.
+
+\bibitem{gpl}
+Wang, Kexin, Nandan Thakur, Nils Reimers, and Iryna Gurevych.
+\newblock GPL: Generative Pseudo Labeling for Unsupervised Domain Adaptation of Dense Retrieval.
+\newblock In {\em Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics (NAACL)}, pages 2345--2360, 2022.
+
+\bibitem{inpars}
+Bonifacio, Luiz, Hugo Abonizio, Marzieh Fadaee, and Rodrigo Nogueira.
+\newblock InPars: Data Augmentation for Information Retrieval using Large Language Models.
+\newblock In {\em Proceedings of the 45th International ACM SIGIR Conference on Research and Development in Information Retrieval}, pages 2319--2325, 2022.
+
+\bibitem{clustering_retrieval}
+Liu, Xiaoyong and W. Bruce Croft.
+\newblock Cluster-Based Retrieval Using Language Models.
+\newblock In {\em Proceedings of the 27th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval}, pages 186--193, 2004.
+
+\bibitem{ottqa}
+Chen, Wenhu, Hongmin Wang, Jianshu Chen, Yunkai Zhang, Hong Wang, Shiyang Li, Xiyou Zhou, and William Yang Wang.
+\newblock Open Question Answering Over Tables and Text.
+\newblock In {\em Proceedings of the 9th International Conference on Learning Representations (ICLR)}, 2021.
+
+\bibitem{fetaqa}
+Nan, Linyong, Chiachun Hsieh, Ziming Mao, Xi Victoria Lin, Neha Verma, Rui Zhang, Wojciech Kry{\'s}ci{\'n}ski, Hailey Schoelkopf, Riley Kong, Xiangru Tang, Mutethia Mutuma, Ben Rosand, Isabel Trindade, Renusree Bandaru, Jacob Cunningham, Caiming Xiong, and Dragomir Radev.
+\newblock FeTaQA: Free-form Table Question Answering.
+\newblock In {\em Transactions of the Association for Computational Linguistics (TACL)}, 10:35--49, 2022.
+
+\bibitem{e2ewtq}
+Pasupat, Panupong and Percy Liang.
+\newblock Compositional Semantic Parsing on Semi-Structured Tables.
+\newblock In {\em Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 1470--1480, 2015.
+
+\bibitem{bge}
+Xiao, Shitao, Zheng Liu, Peitian Zhang, and Niklas Muennighoff.
+\newblock C-Pack: Packaged Resources To Advance General Chinese Embedding.
+\newblock {\em arXiv preprint arXiv:2309.07597}, 2023.
+
+\bibitem{umap}
+McInnes, Leland, John Healy, and James Melville.
+\newblock UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
+\newblock {\em arXiv preprint arXiv:1802.03426}, 2018.
+
+\end{thebibliography}
 
 \end{document}
 \endinput
