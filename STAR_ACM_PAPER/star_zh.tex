@@ -57,10 +57,10 @@
 
 \begin{abstract}
 Table retrieval is the task of retrieving the most relevant tables from large-scale corpora given natural language queries. However, structural and semantic discrepancies between unstructured text and structured tables make embedding alignment particularly challenging.
-Recent methods such as QGpT attempt to enrich table semantics by generating synthetic questions, yet they still rely on coarse partial-table sampling and simple fusion strategies, which limit semantic diversity and hinder effective query–table alignment.
+Recent methods such as QGpT attempt to enrich table semantics by generating synthetic queries, yet they still rely on coarse partial-table sampling and simple fusion strategies, which limit semantic diversity and hinder effective query–table alignment.
 We propose STAR (Semantic Table Aggregation and Representation), a lightweight framework that improves table representation through semantic clustering and adaptive weighted fusion.
-STAR first applies header-aware K-means clustering to group semantically similar rows and selects both representative and distinctive samples to construct a compact yet diverse partial table.
-It then integrates table and synthetic question embeddings based on their semantic alignment, generating unified representations for more effective table retrieval.
+STAR first applies K-means clustering to group semantically similar instances and selects representative centroid samples to construct a compact yet diverse partial table.
+It then integrates table and synthetic query embeddings based on their semantic alignment, generating unified representations for more effective table retrieval.
 This design enables STAR to capture complementary information from structured and textual sources, improving the expressiveness and interpretability of table representations.
 Experiments on five benchmarks show that STAR achieves consistently higher Recall than QGpT on most datasets, demonstrating the effectiveness of semantic clustering and adaptive fusion for robust table representation.
 \end{abstract}
@@ -97,7 +97,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 表格檢索（Table Retrieval）是指根據自然語言查詢從大規模語料庫中檢索出最相關的表格，這項任務在問答系統、資料分析和知識提取等應用中扮演著重要角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨巨大挑戰。傳統的密集檢索方法直接將表格序列化為文字，但這種方式往往忽略了表格的結構特性和語義豐富性，導致檢索效果不佳。
 
-為了緩解這一問題，近期的研究開始探索利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。其中，QGpT\cite{qgpt}是一個代表性方法，它透過從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。儘管QGpT取得了一定的成功，但我們發現其存在兩個關鍵缺陷：
+為了緩解這一問題，近期的研究開始探索利用大型語言模型（LLMs）生成合成查詢（synthetic queries）來豐富表格的語義表示。其中，QGpT\cite{qgpt}是一個代表性方法，它透過從表格中抽取部分列（partial table）並生成相關查詢，試圖在使用者查詢與表格之間建立語義橋樑。儘管QGpT取得了一定的成功，但我們發現其存在兩個關鍵缺陷：
 
 \textbf{（1）啟發式的部分表格採樣：}QGpT採用簡單的top-k策略直接截取表格的前k列作為partial table，這種做法可能導致選取的列之間存在語義冗餘或缺乏代表性，無法充分覆蓋表格的語義多樣性。
 
@@ -105,9 +105,9 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 針對上述問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），一個輕量級的表格表示框架。STAR的核心貢獻包括：
 
-\textbf{（1）聚類引導的實例選擇：}我們採用header-aware K-means聚類方法對表格列進行分組，從每個聚類中選取中心點實例（centroid instances），確保選中的列既具有代表性又保持語義多樣性。
+\textbf{（1）聚類引導的實例選擇：}我們採用K-means聚類方法對表格實例進行分組，從每個聚類中選取中心點實例（centroid instances），確保選中的實例既具有代表性又保持語義多樣性。
 
-\textbf{（2）聚類引導的查詢生成（CGQG）：}不同於QGpT直接對整個partial table生成問題，我們對每個聚類分別生成synthetic question，確保生成的問題能夠全面覆蓋表格的語義空間。
+\textbf{（2）聚類引導的查詢生成（CGQG）：}不同於QGpT直接對整個partial table生成查詢，我們對每個聚類分別生成synthetic query，確保生成的查詢能夠全面覆蓋表格的語義空間。
 
 \textbf{（3）自適應加權融合：}我們將table embedding和各個query embedding分別編碼，並提出三種加權融合策略（Fixed Weight、Dynamic Fusion、Diverse Fusion）來生成最終的表格表示，實現更細粒度的語義整合。
 
@@ -125,7 +125,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \subsection{查詢生成與資料增強}
 查詢生成（Query Generation）是一種有效的資料增強技術，已被廣泛應用於資訊檢索和問答系統中。GPL\cite{gpl}提出使用生成式模型為文件生成偽查詢（pseudo queries），從而在無標註資料的情況下訓練檢索模型。InPars\cite{inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。
 
-在表格檢索領域，QGpT\cite{qgpt}首次系統地應用了LLM進行合成問題生成。該方法透過為partial table生成相關問題，試圖彌合查詢與表格之間的語義鴻溝。然而，QGpT採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
+在表格檢索領域，QGpT\cite{qgpt}首次系統地應用了LLM進行合成查詢生成。該方法透過為partial table生成相關查詢，試圖彌合使用者查詢與表格之間的語義鴻溝。然而，QGpT採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
 
 \subsection{聚類在資訊檢索中的應用}
 聚類技術被廣泛應用於資訊檢索中以提升檢索效率和效果。一些研究\cite{clustering_retrieval}使用聚類方法對文件集合進行組織，從而加速檢索過程。在表格領域，聚類可以用於識別表格中的語義模式和冗餘資訊。本文首次將聚類技術應用於表格實例選擇，以提升partial table的代表性和多樣性。
@@ -134,42 +134,37 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Methodology}
 \label{sec:methodology}
 
-給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架包含三個核心模組：(1) Header-aware K-means Clustering，(2) Clustering-Guided Query Generation (CGQG)，以及 (3) Adaptive Weighted Fusion。圖\ref{fig:framework}展示了STAR的整體架構。
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架包含兩個核心模組：(1) Clustering-Guided Query Generation (CGQG)，以及 (2) Adaptive Weighted Fusion。圖\ref{fig:framework}展示了STAR的整體架構。
 
-\subsection{Header-aware K-means Clustering}
+\subsection{Clustering-Guided Query Generation}
 
-QGpT採用簡單的top-k策略選取表格的前k列，這種啟發式方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 可能遺漏表格中其他重要的語義資訊。為了解決這些問題，我們提出使用K-means聚類來選擇更具代表性和多樣性的實例。
+QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對整個partial table生成synthetic queries。這種啟發式方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的查詢可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出Clustering-Guided Query Generation（CGQG）策略。
 
-具體而言，我們首先將每個表格列 $\mathbf{r}_i$ 與表頭 $\mathcal{H}$ 拼接，構成header-aware representation，然後使用預訓練的embedding模型（如BGE-M3）對其進行編碼，得到embedding向量 $\mathbf{e}_i$：
+CGQG包含兩個步驟：K-means聚類和為每個聚類生成查詢。
+
+\textbf{K-means聚類：}我們首先使用預訓練的embedding模型（如BGE-M3）對每個表格實例 $\mathbf{r}_i$ 進行編碼，得到embedding向量 $\mathbf{e}_i$：
 \begin{equation}
-\mathbf{e}_i = \text{Encoder}(\mathcal{H} \oplus \mathbf{r}_i)
+\mathbf{e}_i = \text{Encoder}(\mathbf{r}_i)
 \end{equation}
-其中 $\oplus$ 表示拼接操作。
 
 接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
 \begin{equation}
 \mathbf{r}_j^* = \arg\min_{\mathbf{r}_i \in C_j} \|\mathbf{e}_i - \boldsymbol{\mu}_j\|^2
 \end{equation}
-其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。
+其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心點）。
 
-透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心點）。
-
-\subsection{Clustering-Guided Query Generation}
-
-QGpT直接對整個partial table生成synthetic queries，這種方式可能導致生成的問題偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。受到K-means聚類結果的啟發，我們提出Clustering-Guided Query Generation（CGQG）策略。
-
-對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic question $q_j$：
+\textbf{查詢生成：}對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic query $q_j$：
 \begin{equation}
 q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 \end{equation}
 
-這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic questions $\{q_1, q_2, \ldots, q_k\}$，每個問題都對應一個特定的語義聚類。這種方法確保生成的問題能夠全面覆蓋表格的不同語義方面，真正充當使用者查詢與表格之間的語義橋樑。
+這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic queries $\{q_1, q_2, \ldots, q_k\}$，每個查詢都對應一個特定的語義聚類。這種方法確保生成的查詢能夠全面覆蓋表格的不同語義方面，真正充當使用者查詢與表格之間的語義橋樑。
 
 \subsection{Adaptive Weighted Fusion}
 
 QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後送入編碼器。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。我們提出自適應加權融合策略，分別編碼table和queries，然後進行加權組合。
 
-具體而言，我們首先分別編碼partial table和每個synthetic question：
+具體而言，我們首先分別編碼partial table和每個synthetic query：
 \begin{align}
 \mathbf{e}_{\text{table}} &= \text{Encoder}(\mathcal{T}_{partial}) \\
 \mathbf{e}_{q_j} &= \text{Encoder}(q_j), \quad j=1,\ldots,k
@@ -188,13 +183,13 @@ QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後�
 w_0 = \alpha, \quad w_j = \frac{1-\alpha}{k}, \quad j=1,\ldots,k
 \end{equation}
 
-\textbf{(2) Dynamic Fusion：}根據每個synthetic question與table的語義相似度動態分配權重。我們使用cosine similarity計算相似度，並透過softmax歸一化：
+\textbf{(2) Dynamic Fusion：}根據每個synthetic query與table的語義相似度動態分配權重。我們使用cosine similarity計算相似度，並透過softmax歸一化：
 \begin{equation}
 s_j = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{q_j}), \quad w_j = \frac{\exp(s_j/\tau)}{\sum_{i=0}^{k} \exp(s_i/\tau)}
 \end{equation}
 其中 $\tau$ 是溫度參數，$s_0 = 1$（table自身的相似度）。
 
-\textbf{(3) Diverse Fusion：}獎勵語義多樣性高的questions，懲罰重複或相似的questions。對於每個query $q_j$，我們計算其與其他queries的平均語義距離：
+\textbf{(3) Diverse Fusion：}獎勵語義多樣性高的queries，懲罰重複或相似的queries。對於每個query $q_j$，我們計算其與其他queries的平均語義距離：
 \begin{equation}
 d_j = \frac{1}{k-1} \sum_{i \neq j} (1 - \cos(\mathbf{e}_{q_i}, \mathbf{e}_{q_j}))
 \end{equation}
@@ -249,7 +244,7 @@ w_j = \frac{\exp(d_j/\tau)}{\exp(d_0/\tau) + \sum_{i=1}^{k} \exp(d_i/\tau)}
 
 \textbf{(1) K-means聚類的重要性：}移除K-means聚類後，效能在所有資料集上都有明顯下降，尤其是在Mimo (ch)和OTTQA資料集上。這證明了使用聚類方法選擇多樣化和代表性實例的有效性。
 
-\textbf{(2) CGQG的貢獻：}移除CGQG後，模型效能也有所下降，表明為不同聚類分別生成問題確實能夠更好地覆蓋表格的語義空間。
+\textbf{(2) CGQG的貢獻：}移除CGQG後，模型效能也有所下降，表明為不同聚類分別生成查詢確實能夠更好地覆蓋表格的語義空間。
 
 \textbf{(3) Weighted Fusion的必要性：}移除加權融合策略後，模型退化為類似QGpT的簡單拼接方法，效能顯著下降。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
 
