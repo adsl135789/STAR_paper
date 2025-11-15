@@ -241,8 +241,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 我們比較了以下變體：
 (1) \textbf{STAR (full)}：完整模型，使用Dynamic Weight Fusion；
 (2) \textbf{w/o SCDG}：移除Semantic Clustering and Query Generation模組，使用QGpT的top-k採樣和直接query generation；
-(3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略；
-(4) \textbf{QGpT}：原始QGpT方法作為baseline。
+(3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略。
 
 實驗結果表明：
 
@@ -250,7 +249,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 
 \textbf{(2) Weighted Fusion的貢獻：}移除加權融合策略後（w/o WF），平均R@1從51.86\%下降至49.08\%，下降了2.78個百分點。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
 
-\textbf{(3) 整體提升：}完整的STAR模型相比QGpT baseline在平均R@1上提升了6.39個百分點（從45.47\%提升至51.86\%），證明了兩個核心模組的協同效果。
+\textbf{(3) 兩個模組的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一模組的變體。SCDG和WF兩個模組共同作用，使STAR能夠有效地表示表格的語義資訊。
 
 \subsection{權重策略分析}
 
