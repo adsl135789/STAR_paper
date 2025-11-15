@@ -21,7 +21,7 @@ def load_jsonl(file_path):
     logger.info(f"Loaded {len(data)} documents from {file_path}")
     return data
 
-def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=None, gpu_id=None, batch_size=32, dimension=1024, force=False, mode="representation", table_weight=0.5, attention_module_path=None, attention_config_path=None):
+def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=None, gpu_id=None, batch_size=32, dimension=1024, force=False, mode="representation", table_weight=0.5, question_weight_min=0.1, question_weight_max=0.5, diversity_alpha=0.3, coverage_beta=2.0, attention_module_path=None, attention_config_path=None):
     """Build embeddings for single JSONL file
 
     Args:
@@ -33,13 +33,20 @@ def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=N
         batch_size: Batch size for embedding
         dimension: Embedding dimension
         force: Force rebuild if database exists
-        mode: Embedding mode - "representation", "fusion", "dynamic_fusion", "diversity_fusion", or "attention_fusion"
+        mode: Embedding mode - "representation", "fusion", "dynamic_fusion", "diversity_fusion", "dynamic_concat", "dynamic_concat_v2", "concat_fusion", or "attention_fusion"
             - "representation": Embed item["representation"] directly
             - "fusion": Embed item["table_contents"] and each item["synthetic_questions"], then weighted average
             - "dynamic_fusion": Cosine-based semantic attention - questions weighted by similarity to table
             - "diversity_fusion": Question diversity weighting - diverse questions get higher weights
+            - "dynamic_concat": Concatenate questions, dynamic weight based on table-questions similarity
+            - "dynamic_concat_v2": Concatenate questions, dynamic weight adjusted by intra-question coherence
+            - "concat_fusion": Embed table separately, concatenate all questions then embed, weighted fusion
             - "attention_fusion": Use trained attention module to fuse table and question embeddings
-        table_weight: Weight ratio for table_contents (default: 0.5, meaning 50% of total weight, ignored in dynamic_fusion, diversity_fusion and attention_fusion modes)
+        table_weight: Weight ratio for table_contents (default: 0.5, meaning 50% of total weight, used in fusion and concat_fusion modes, ignored in dynamic_fusion, diversity_fusion and attention_fusion modes)
+        question_weight_min: Minimum weight for questions in dynamic_fusion, dynamic_concat, and dynamic_concat_v2 modes (default: 0.1)
+        question_weight_max: Maximum weight for questions in dynamic_fusion, dynamic_concat, and dynamic_concat_v2 modes (default: 0.5)
+        diversity_alpha: Diversity importance factor for dynamic_concat_v2 mode (default: 0.3)
+        coverage_beta: Soft weighting temperature for semantic coverage in dynamic_concat_v2 mode (default: 2.0)
         attention_module_path: Path to trained attention module weights (required for attention_fusion mode)
         attention_config_path: Path to attention module config (required for attention_fusion mode)
     """
@@ -125,11 +132,14 @@ def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=N
     elif mode == "dynamic_fusion":
         logger.info(f"Generating embeddings for {len(data)} documents (dynamic_fusion mode)")
         logger.info("Using Cosine-based Semantic Attention with dynamic table-question fusion")
-        logger.info("Temperature τ=0.07, dynamic weight based on average similarity")
+        logger.info(f"Temperature τ=0.07, question weight range: [{question_weight_min:.2f}, {question_weight_max:.2f}]")
         embeddings_list = []
 
         # Temperature parameter for softmax
         tau = 0.07
+
+        # Weight range for questions
+        weight_range = question_weight_max - question_weight_min
 
         for item in data:
             # Add table_contents
@@ -181,9 +191,9 @@ def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=N
             # Dynamic weight based on average similarity
             # Higher similarity → give more weight to questions
             avg_similarity = np.mean(similarities)
-            # Map similarity [0, 1] to question_weight [0.3, 0.7]
+            # Map similarity [0, 1] to question_weight [question_weight_min, question_weight_max]
             # When similarity is high (close to 1), questions get more weight
-            question_weight = 0.1 + 0.4 * avg_similarity
+            question_weight = question_weight_min + weight_range * avg_similarity
             table_weight = 1.0 - question_weight
 
             # Final embedding: weighted combination of table and questions
@@ -294,6 +304,254 @@ def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=N
 
         embeddings = np.array(embeddings_list)
 
+    elif mode == "dynamic_concat":
+        logger.info(f"Generating embeddings for {len(data)} documents (dynamic_concat mode)")
+        logger.info("Table embedding: separate, Questions embedding: concatenated")
+        logger.info(f"Dynamic weight based on table-questions similarity, range: [{question_weight_min:.2f}, {question_weight_max:.2f}]")
+        embeddings_list = []
+
+        # Weight range for questions
+        weight_range = question_weight_max - question_weight_min
+
+        for item in data:
+            # Check table_contents
+            if "table_contents" not in item:
+                logger.warning(f"Item {item.get('id', 'unknown')} missing 'table_contents', skipping")
+                embeddings_list.append(np.zeros(dimension))
+                continue
+
+            table_text = item["table_contents"]
+
+            # Get synthetic_questions
+            questions = []
+            if "synthetic_questions" in item and isinstance(item["synthetic_questions"], list):
+                questions = item["synthetic_questions"]
+                if len(questions) == 0:
+                    logger.warning(f"Item {item.get('id', 'unknown')} has empty 'synthetic_questions', using only table_contents")
+            else:
+                logger.warning(f"Item {item.get('id', 'unknown')} missing 'synthetic_questions', using only table_contents")
+
+            # Encode table separately
+            table_embedding = embedding_model.encode([table_text]).dense_vecs[0]
+
+            # If no questions, use table embedding only
+            if len(questions) == 0:
+                embeddings_list.append(table_embedding)
+                continue
+
+            # Concatenate all questions with separator
+            concatenated_questions = " ".join(questions)
+
+            # Encode concatenated questions
+            questions_embedding = embedding_model.encode([concatenated_questions]).dense_vecs[0]
+
+            # Calculate cosine similarity between table and concatenated questions
+            # Normalize vectors
+            table_norm = table_embedding / (np.linalg.norm(table_embedding) + 1e-10)
+            questions_norm = questions_embedding / (np.linalg.norm(questions_embedding) + 1e-10)
+
+            # Compute cosine similarity
+            similarity = np.dot(table_norm, questions_norm)
+
+            # Dynamic weight based on similarity
+            # Map similarity [0, 1] to question_weight [question_weight_min, question_weight_max]
+            question_weight = question_weight_min + weight_range * similarity
+            table_weight = 1.0 - question_weight
+
+            # Weighted fusion
+            final_embedding = table_weight * table_embedding + question_weight * questions_embedding
+
+            embeddings_list.append(final_embedding)
+
+            # Log for first few items
+            if len(embeddings_list) <= 3:
+                logger.debug(f"Item {item.get('id', 'unknown')}: "
+                           f"num_questions={len(questions)}, "
+                           f"concat_length={len(concatenated_questions)}, "
+                           f"similarity={similarity:.3f}, "
+                           f"table_weight={table_weight:.3f}, "
+                           f"question_weight={question_weight:.3f}")
+
+        embeddings = np.array(embeddings_list)
+
+    elif mode == "dynamic_concat_v2":
+        logger.info(f"Generating embeddings for {len(data)} documents (dynamic_concat_v2 mode)")
+        logger.info("Table embedding: separate, Questions embedding: concatenated")
+        logger.info("Using Diversity-based Dynamic Weighting with Semantic Coverage")
+        logger.info(f"Question weight range: [{question_weight_min:.2f}, {question_weight_max:.2f}]")
+        logger.info(f"Diversity alpha: {diversity_alpha:.2f}, Coverage beta: {coverage_beta:.2f}")
+        embeddings_list = []
+
+        for item in data:
+            # Check table_contents
+            if "table_contents" not in item:
+                logger.warning(f"Item {item.get('id', 'unknown')} missing 'table_contents', skipping")
+                embeddings_list.append(np.zeros(dimension))
+                continue
+
+            table_text = item["table_contents"]
+
+            # Get synthetic_questions
+            questions = []
+            if "synthetic_questions" in item and isinstance(item["synthetic_questions"], list):
+                questions = item["synthetic_questions"]
+                if len(questions) == 0:
+                    logger.warning(f"Item {item.get('id', 'unknown')} has empty 'synthetic_questions', using only table_contents")
+            else:
+                logger.warning(f"Item {item.get('id', 'unknown')} missing 'synthetic_questions', using only table_contents")
+
+            # Encode table separately
+            table_embedding = embedding_model.encode([table_text]).dense_vecs[0]
+
+            # If no questions, use table embedding only
+            if len(questions) == 0:
+                embeddings_list.append(table_embedding)
+                continue
+
+            # If only one question, cannot compute coherence, fallback to simple weighted average
+            if len(questions) == 1:
+                concatenated_questions = questions[0]
+                questions_embedding = embedding_model.encode([concatenated_questions]).dense_vecs[0]
+                # Use 50-50 weight for single question case
+                final_embedding = 0.5 * table_embedding + 0.5 * questions_embedding
+                embeddings_list.append(final_embedding)
+                continue
+
+            # Concatenate all questions with separator
+            concatenated_questions = " ".join(questions)
+
+            # Encode concatenated questions
+            questions_embedding = embedding_model.encode([concatenated_questions]).dense_vecs[0]
+
+            # Encode individual questions for diversity and coverage calculation
+            individual_question_embeddings = embedding_model.encode(questions).dense_vecs
+            N = len(questions)
+
+            # Normalize embeddings for cosine similarity
+            table_norm = table_embedding / (np.linalg.norm(table_embedding) + 1e-10)
+            question_norms = individual_question_embeddings / (np.linalg.norm(individual_question_embeddings, axis=1, keepdims=True) + 1e-10)
+
+            # Step 1: Calculate coherence (c) - average pairwise similarity between questions
+            # c = (2 / (N(N-1))) * Σ_{i<j} cos(E_qi, E_qj)
+            coherence_sum = 0.0
+            for i in range(N):
+                for j in range(i + 1, N):
+                    coherence_sum += np.dot(question_norms[i], question_norms[j])
+            coherence = (2.0 / (N * (N - 1))) * coherence_sum
+
+            # Step 2: Calculate diversity (v) - inverse of coherence
+            # v = 1 - c
+            # Higher diversity means questions are more semantically diverse
+            diversity = 1.0 - coherence
+
+            # Step 3: Calculate table-question similarities for each question
+            # s_i = cos(E_t, E_qi)
+            similarities = np.dot(question_norms, table_norm)
+
+            # Step 4: Soft weighting - focus on questions with similarity near the mean
+            # w_i = exp(β(1 - |s_i - s_mean|)) / Σ_j exp(β(1 - |s_j - s_mean|))
+            s_mean = np.mean(similarities)
+            deviations = np.abs(similarities - s_mean)
+            soft_weights_unnorm = np.exp(coverage_beta * (1.0 - deviations))
+            soft_weights = soft_weights_unnorm / np.sum(soft_weights_unnorm)
+
+            # Calculate semantic coverage (r) - weighted average similarity
+            # r = (1/N) * Σ_i s_i * w_i
+            semantic_coverage = np.sum(similarities * soft_weights)
+
+            # Step 5: Calculate final question weight with diversity boost
+            # w_q = ((1 + r) / 2) * (1 + α * v)
+            # First term: table-questions relevance
+            # Second term: diversity contribution
+            base_weight = (1.0 + semantic_coverage) / 2.0
+            diversity_boost = 1.0 + diversity_alpha * diversity
+            raw_question_weight = base_weight * diversity_boost
+
+            # Map to [question_weight_min, question_weight_max]
+            # Assuming raw_question_weight ∈ [0, ~1.5], map to target range
+            # Normalize by expected max value (when r=1, v=1): (1+1)/2 * (1+α*1) = 1+α
+            max_possible = 1.0 + diversity_alpha
+            normalized = raw_question_weight / max_possible
+            weight_range = question_weight_max - question_weight_min
+            question_weight = question_weight_min + normalized * weight_range
+
+            # Ensure within bounds
+            question_weight = np.clip(question_weight, question_weight_min, question_weight_max)
+            table_weight = 1.0 - question_weight
+
+            # Weighted fusion
+            final_embedding = table_weight * table_embedding + question_weight * questions_embedding
+
+            embeddings_list.append(final_embedding)
+
+            # Log for first few items
+            if len(embeddings_list) <= 3:
+                logger.debug(f"Item {item.get('id', 'unknown')}: "
+                           f"num_questions={len(questions)}, "
+                           f"coherence={coherence:.3f}, "
+                           f"diversity={diversity:.3f}, "
+                           f"s_mean={s_mean:.3f}, "
+                           f"semantic_coverage={semantic_coverage:.3f}, "
+                           f"base_weight={base_weight:.3f}, "
+                           f"diversity_boost={diversity_boost:.3f}, "
+                           f"question_weight={question_weight:.3f}")
+
+        embeddings = np.array(embeddings_list)
+
+    elif mode == "concat_fusion":
+        question_weight = 1 - table_weight
+        logger.info(f"Generating embeddings for {len(data)} documents (concat_fusion mode)")
+        logger.info(f"Table embedding: separate, Questions embedding: concatenated")
+        logger.info(f"Weight distribution - table: {table_weight:.2f}, questions: {question_weight:.2f}")
+        embeddings_list = []
+
+        for item in data:
+            # Check table_contents
+            if "table_contents" not in item:
+                logger.warning(f"Item {item.get('id', 'unknown')} missing 'table_contents', skipping")
+                embeddings_list.append(np.zeros(dimension))
+                continue
+
+            table_text = item["table_contents"]
+
+            # Get synthetic_questions
+            questions = []
+            if "synthetic_questions" in item and isinstance(item["synthetic_questions"], list):
+                questions = item["synthetic_questions"]
+                if len(questions) == 0:
+                    logger.warning(f"Item {item.get('id', 'unknown')} has empty 'synthetic_questions', using only table_contents")
+            else:
+                logger.warning(f"Item {item.get('id', 'unknown')} missing 'synthetic_questions', using only table_contents")
+
+            # Encode table separately
+            table_embedding = embedding_model.encode([table_text]).dense_vecs[0]
+
+            # If no questions, use table embedding only
+            if len(questions) == 0:
+                embeddings_list.append(table_embedding)
+                continue
+
+            # Concatenate all questions with separator
+            concatenated_questions = " ".join(questions)
+
+            # Encode concatenated questions
+            questions_embedding = embedding_model.encode([concatenated_questions]).dense_vecs[0]
+
+            # Weighted fusion
+            final_embedding = table_weight * table_embedding + question_weight * questions_embedding
+
+            embeddings_list.append(final_embedding)
+
+            # Log for first few items
+            if len(embeddings_list) <= 3:
+                logger.debug(f"Item {item.get('id', 'unknown')}: "
+                           f"num_questions={len(questions)}, "
+                           f"concat_length={len(concatenated_questions)}, "
+                           f"table_weight={table_weight:.3f}, "
+                           f"question_weight={question_weight:.3f}")
+
+        embeddings = np.array(embeddings_list)
+
     elif mode == "attention_fusion":
         # Validate required arguments
         if attention_module_path is None or attention_config_path is None:
@@ -381,7 +639,7 @@ def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=N
         logger.info(f"Generated {len(embeddings)} fused embeddings using trained attention module")
 
     else:
-        raise ValueError(f"Unknown mode: {mode}. Must be 'representation', 'fusion', 'dynamic_fusion', 'diversity_fusion', or 'attention_fusion'")
+        raise ValueError(f"Unknown mode: {mode}. Must be 'representation', 'fusion', 'dynamic_fusion', 'diversity_fusion', 'dynamic_concat', 'dynamic_concat_v2', 'concat_fusion', or 'attention_fusion'")
 
     # Create database
     client = MilvusClient(str(db_path))
@@ -411,7 +669,7 @@ def build_embeddings(jsonl_path, db_path, model_name="bge_m3_flag", model_path=N
     client.insert(collection_name="corpus_dense", data=insert_data)
     logger.success(f"Saved {len(insert_data)} records to {db_path}")
 
-def process_directory(input_dir, output_dir, model_name, model_path, gpu_id, batch_size, dimension, force, mode, table_weight, attention_module_path, attention_config_path):
+def process_directory(input_dir, output_dir, model_name, model_path, gpu_id, batch_size, dimension, force, mode, table_weight, question_weight_min, question_weight_max, diversity_alpha, coverage_beta, attention_module_path, attention_config_path):
     """Process all JSONL files in directory"""
     jsonl_files = list(Path(input_dir).rglob("*.jsonl"))
 
@@ -427,7 +685,7 @@ def process_directory(input_dir, output_dir, model_name, model_path, gpu_id, bat
         db_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            build_embeddings(file_path, db_path, model_name, model_path, gpu_id, batch_size, dimension, force, mode, table_weight, attention_module_path, attention_config_path)
+            build_embeddings(file_path, db_path, model_name, model_path, gpu_id, batch_size, dimension, force, mode, table_weight, question_weight_min, question_weight_max, diversity_alpha, coverage_beta, attention_module_path, attention_config_path)
             successful += 1
         except Exception as e:
             logger.error(f"Failed to process {file_path}: {e}")
@@ -445,10 +703,18 @@ def main():
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size for embedding model (default: 32)')
     parser.add_argument('--dimension', type=int, default=1024, help='Embedding dimension (default: 1024)')
     parser.add_argument('--force', action='store_true', help='Force rebuild (default: False)')  # 修改這裡
-    parser.add_argument('--mode', default="representation", choices=["representation", "fusion", "dynamic_fusion", "diversity_fusion", "attention_fusion"],
-                        help='Embedding mode: representation (default), fusion, dynamic_fusion, diversity_fusion, or attention_fusion')
+    parser.add_argument('--mode', default="representation", choices=["representation", "fusion", "dynamic_fusion", "diversity_fusion", "dynamic_concat", "dynamic_concat_v2", "concat_fusion", "attention_fusion"],
+                        help='Embedding mode: representation (default), fusion, dynamic_fusion, diversity_fusion, dynamic_concat, dynamic_concat_v2, concat_fusion, or attention_fusion')
     parser.add_argument('--table-weight', type=float, default=0.5,
-                        help='Weight ratio for table_contents in fusion mode (default: 0.5, ignored in dynamic_fusion and attention_fusion)')
+                        help='Weight ratio for table_contents in fusion and concat_fusion modes (default: 0.5, ignored in dynamic_fusion, diversity_fusion and attention_fusion)')
+    parser.add_argument('--question-weight-min', type=float, default=0.1,
+                        help='Minimum weight for questions in dynamic_fusion, dynamic_concat, and dynamic_concat_v2 modes (default: 0.1)')
+    parser.add_argument('--question-weight-max', type=float, default=0.5,
+                        help='Maximum weight for questions in dynamic_fusion, dynamic_concat, and dynamic_concat_v2 modes (default: 0.5)')
+    parser.add_argument('--diversity-alpha', type=float, default=0.3,
+                        help='Diversity importance factor for dynamic_concat_v2 mode (default: 0.3)')
+    parser.add_argument('--coverage-beta', type=float, default=4.0,
+                        help='Soft weighting temperature for semantic coverage in dynamic_concat_v2 mode (default: 2.0)')
     parser.add_argument('--attention-module-path', help='Path to trained attention module weights (required for attention_fusion mode)')
     parser.add_argument('--attention-config-path', help='Path to attention module config (required for attention_fusion mode)')
 
@@ -465,9 +731,9 @@ def main():
     logger.debug(f"Output path: {output_path}")
     try:
         if input_path.is_file():
-            build_embeddings(input_path, output_path, args.model, args.model_path, args.gpu_id, args.batch_size, args.dimension, args.force, args.mode, args.table_weight, args.attention_module_path, args.attention_config_path)
+            build_embeddings(input_path, output_path, args.model, args.model_path, args.gpu_id, args.batch_size, args.dimension, args.force, args.mode, args.table_weight, args.question_weight_min, args.question_weight_max, args.diversity_alpha, args.coverage_beta, args.attention_module_path, args.attention_config_path)
         elif input_path.is_dir():
-            if process_directory(input_path, output_path, args.model, args.model_path, args.gpu_id, args.batch_size, args.dimension, args.force, args.mode, args.table_weight, args.attention_module_path, args.attention_config_path) == 0:
+            if process_directory(input_path, output_path, args.model, args.model_path, args.gpu_id, args.batch_size, args.dimension, args.force, args.mode, args.table_weight, args.question_weight_min, args.question_weight_max, args.diversity_alpha, args.coverage_beta, args.attention_module_path, args.attention_config_path) == 0:
                 sys.exit(1)
         else:
             logger.error(f"Invalid input: {input_path}")

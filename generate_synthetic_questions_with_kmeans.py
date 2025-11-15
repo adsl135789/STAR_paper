@@ -27,7 +27,7 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from experiment_module.cycle_training.generation.sglang_client import SGLangClient
-from experiment_module.cycle_training.prompt import T2Q_PROMPT_KMEANS
+from experiment_module.cycle_training.prompt import T2Q_PROMPT_KMEANS, IMPROVED_T2Q_PROMPT
 from embedding_model import EmbeddingModel, init_embedding_model
 
 
@@ -41,8 +41,10 @@ class KMeansQuestionGenerator:
         include_diverse: bool = True,
         max_instances_per_cluster: int = 10,
         use_header_augmentation: bool = True,
+        header_weight: float = 0.2,
         max_concurrent: int = 32,
         timeout: float = 60.0,
+        use_centroid_mode: bool = False,
     ):
         """
         Initialize generator.
@@ -56,10 +58,15 @@ class KMeansQuestionGenerator:
             max_instances_per_cluster: Maximum number of instances per cluster to include in prompt
                                       (default: 10) to avoid exceeding model context window
             use_header_augmentation: Whether to augment rows with header info for embedding
-                                    If True: "Country: USA; Population: 330M"
-                                    If False: "USA,330M" (raw CSV)
+                                    If True: Use weighted fusion E_fused = λ*E_header + (1-λ)*E_row
+                                    If False: Use raw CSV rows only
+            header_weight: Weight (λ) for header embedding in fusion (default: 0.2)
+                          E_fused = λ*E_header + (1-λ)*E_row
             max_concurrent: Maximum concurrent requests
             timeout: Request timeout in seconds
+            use_centroid_mode: Whether to use centroid mode for question generation
+                             If True: Generate k questions from header + k centroid instances (one per instance)
+                             If False: Generate 1 question per cluster (original mode)
         """
         self.client = SGLangClient(
             base_url=sglang_url,
@@ -70,12 +77,18 @@ class KMeansQuestionGenerator:
         self.include_diverse = include_diverse
         self.max_instances_per_cluster = max_instances_per_cluster
         self.use_header_augmentation = use_header_augmentation
+        self.header_weight = header_weight
+        self.use_centroid_mode = use_centroid_mode
         self.embedding_model = None
         logger.info(f"Initialized SGLang client: {sglang_url}")
         logger.info(f"K-means clusters: {k_clusters}")
-        logger.info(f"Include diverse instances: {include_diverse}")
-        logger.info(f"Max instances per cluster: {max_instances_per_cluster}")
+        logger.info(f"Question generation mode: {'centroid' if use_centroid_mode else 'cluster-based'}")
+        if not use_centroid_mode:
+            logger.info(f"Include diverse instances: {include_diverse}")
+            logger.info(f"Max instances per cluster: {max_instances_per_cluster}")
         logger.info(f"Use header augmentation: {use_header_augmentation}")
+        if use_header_augmentation:
+            logger.info(f"Header weight (λ): {header_weight}")
 
     def load_embedding_model(self):
         """Load BGE-M3 embedding model."""
@@ -115,9 +128,67 @@ class KMeansQuestionGenerator:
 
         return "; ".join(pairs)
 
+    def get_header_embedding(self, header: List[str]) -> np.ndarray:
+        """
+        Generate embedding for the header.
+        
+        Creates a header-aware sentence like:
+        "Country: ; Population: ; GDP: ; Region: "
+        
+        This captures the semantic meaning of column names.
+        
+        Args:
+            header: List of header strings
+            
+        Returns:
+            Header embedding vector
+        """
+        # Parse header to get column names
+        if isinstance(header, list):
+            if len(header) == 1:
+                header_cols = [col.strip() for col in header[0].split(',')]
+            else:
+                # Multi-row header: combine all levels
+                all_cols = []
+                for header_row in header:
+                    cols = [col.strip() for col in header_row.split(',')]
+                    all_cols.append(cols)
+                # Create hierarchical header
+                header_cols = []
+                for i in range(len(all_cols[0])):
+                    col_parts = []
+                    for row_cols in all_cols:
+                        if i < len(row_cols) and row_cols[i]:
+                            col_parts.append(row_cols[i])
+                    header_cols.append("/".join(col_parts) if col_parts else "")
+        else:
+            header_cols = [col.strip() for col in str(header).split(',')]
+        
+        # Create header sentence (column names only)
+        header_sentence = "; ".join([f"{col}" for col in header_cols if col])
+        
+        # Encode header
+        result = self.embedding_model.encode([header_sentence])
+        header_embedding = np.array(result.dense_vecs)[0]
+        
+        return header_embedding
+
     def embed_instances(self, instances: List[str], header: List[str]) -> np.ndarray:
         """
-        Generate BGE-M3 embeddings for instances.
+        Generate BGE-M3 embeddings for instances with header-aware fusion.
+        
+        Implements the weighted fusion approach:
+        E_fused = λ * E_header + (1 - λ) * E_row
+        
+        Where:
+        - E_header: Embedding of header (column names semantic)
+        - E_row: Embedding of raw row values
+        - λ (lambda): Header weight (default 0.2)
+        
+        This approach:
+        1. Helps K-means understand column semantics
+        2. Prevents all rows from being too similar due to same header
+        3. Balances structural info (header) with content info (values)
 
         Args:
             instances: List of CSV-formatted instance strings
@@ -129,16 +200,31 @@ class KMeansQuestionGenerator:
         if not instances:
             return np.array([])
 
-        # Apply header augmentation if enabled
         if self.use_header_augmentation:
-            texts_to_embed = [self.augment_row_with_header(row, header) for row in instances]
+            # Header-Aware Fusion approach
+            logger.debug(f"Using header-aware fusion with λ={self.header_weight}")
+            
+            # Step 1: Get header embedding (E_header)
+            header_embedding = self.get_header_embedding(header)
+            
+            # Step 2: Get raw row embeddings (E_row)
+            result = self.embedding_model.encode(instances)
+            row_embeddings = np.array(result.dense_vecs)
+            
+            # Step 3: Fused embedding = λ * E_header + (1 - λ) * E_row
+            lambda_weight = self.header_weight
+            fused_embeddings = (
+                lambda_weight * header_embedding[np.newaxis, :] +  # Broadcast header to all rows
+                (1 - lambda_weight) * row_embeddings
+            )
+            
+            logger.debug(f"Created {len(fused_embeddings)} fused embeddings (header weight={lambda_weight})")
+            return fused_embeddings
         else:
-            # Use raw CSV rows without augmentation
-            texts_to_embed = instances
-        
-        result = self.embedding_model.encode(texts_to_embed)
-        embeddings = np.array(result.dense_vecs)
-        return embeddings
+            # Use raw CSV rows without header augmentation
+            result = self.embedding_model.encode(instances)
+            embeddings = np.array(result.dense_vecs)
+            return embeddings
 
     def cluster_and_select_rows(
         self,
@@ -214,6 +300,61 @@ class KMeansQuestionGenerator:
         )
         return selected_rows, cluster_assignments
 
+    def select_centroid_instances(
+        self,
+        instances: List[str],
+        header: List[str]
+    ) -> List[str]:
+        """
+        Select k centroid instances (closest to each cluster center).
+
+        This method is used in centroid mode to select representative instances
+        for generating questions.
+
+        Args:
+            instances: List of CSV-formatted row strings
+            header: Table header
+
+        Returns:
+            List of k centroid instances (one per cluster)
+        """
+        n_instances = len(instances)
+
+        # If fewer instances than clusters, return all instances
+        if n_instances <= self.k_clusters:
+            logger.debug(f"Table has {n_instances} instances <= k={self.k_clusters}, using all instances")
+            return instances
+
+        # Embed all instances
+        embeddings = self.embed_instances(instances, header)
+
+        # K-means clustering
+        kmeans = KMeans(n_clusters=self.k_clusters, random_state=42, n_init=10)
+        cluster_labels = kmeans.fit_predict(embeddings)
+        centroids = kmeans.cluster_centers_
+
+        # Select centroid instance per cluster (closest to centroid)
+        centroid_instances = []
+        for cluster_id in range(self.k_clusters):
+            cluster_indices = np.where(cluster_labels == cluster_id)[0]
+
+            if len(cluster_indices) == 0:
+                continue
+
+            cluster_embeddings = embeddings[cluster_indices]
+            centroid = centroids[cluster_id]
+
+            # Select closest to centroid
+            distances = np.linalg.norm(cluster_embeddings - centroid, axis=1)
+            closest_idx = cluster_indices[np.argmin(distances)]
+            centroid_instances.append(instances[closest_idx])
+
+        logger.debug(
+            f"Selected {len(centroid_instances)} centroid instances "
+            f"from {n_instances} instances across {self.k_clusters} clusters"
+        )
+        return centroid_instances
+
     def table_to_csv_text(self, header: List[str], instances: List[str]) -> str:
         """
         Convert table to CSV text representation.
@@ -277,7 +418,7 @@ class KMeansQuestionGenerator:
                 f"limiting to {self.max_instances_per_cluster} for prompt"
             )
             cluster_instances = cluster_instances[:self.max_instances_per_cluster]
-        
+
         # Create table text with header and cluster instances
         table_text = self.table_to_csv_text(header, cluster_instances)
 
@@ -305,6 +446,128 @@ class KMeansQuestionGenerator:
 
         except Exception as e:
             logger.error(f"Failed to generate question for cluster: {e}")
+            return []
+
+    async def generate_centroid_questions(
+        self,
+        header: List[str],
+        centroid_instances: List[str],
+        max_new_tokens: int = 1024,
+        temperature: float = 0.1,
+        lang: str = "en",
+        max_retries: int = 10,
+    ) -> List[str]:
+        """
+        Generate k questions from header + k centroid instances (one question per instance).
+
+        Centroid Mode Question Generation:
+        - Input: header + k centroid instances (one per cluster)
+        - Use IMPROVED_T2Q_PROMPT to generate k questions (one per instance)
+        - Each question focuses on the specific content of its corresponding row
+        - Cumulative generation: if fewer than k questions are generated, keep them
+          and generate only the remaining needed questions in the next round
+
+        Args:
+            header: Table header
+            centroid_instances: List of k centroid instances (one per cluster)
+            max_new_tokens: Max tokens to generate
+            temperature: Sampling temperature
+            lang: Language code for question generation
+            max_retries: Maximum retry attempts if k questions are not generated
+
+        Returns:
+            List of exactly k generated questions (one per instance), or partial list if failed
+        """
+        num_questions = len(centroid_instances)
+        accumulated_questions = []
+        used_indices = set()  # Track which instances have been used
+
+        # Retry until we get exactly k questions
+        for attempt in range(max_retries):
+            # Calculate how many more questions we need
+            remaining_needed = num_questions - len(accumulated_questions)
+
+            if remaining_needed <= 0:
+                # We have enough questions
+                logger.debug(f"Successfully accumulated {num_questions} questions")
+                return accumulated_questions[:num_questions]
+
+            # Get unused instances
+            available_indices = [i for i in range(num_questions) if i not in used_indices]
+            available_instances = [centroid_instances[i] for i in available_indices]
+
+            if not available_instances:
+                # All instances used but still not enough questions - this shouldn't happen
+                logger.error(f"All instances used but only {len(accumulated_questions)}/{num_questions} questions generated")
+                break
+
+            # Create table text with header and available instances
+            table_text = self.table_to_csv_text(header, available_instances)
+
+            # Format prompt
+            prompt = IMPROVED_T2Q_PROMPT.format(
+                text=table_text,
+                lang=lang,
+                num_questions=len(available_instances)
+            )
+
+            try:
+                results = await self.client.generate_batch(
+                    prompts=[prompt],
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                )
+
+                result = results[0]
+
+                if not result.success:
+                    logger.warning(f"Generation failed (attempt {attempt + 1}/{max_retries}): {result.error}")
+                    continue
+
+                # Extract questions
+                new_questions = self._extract_questions(result.text)
+
+                if not new_questions:
+                    logger.warning(f"No questions extracted (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(0.5)
+                    continue
+
+                # Add new questions and mark indices as used
+                # We assume questions are generated in order matching the instances
+                questions_to_add = min(len(new_questions), len(available_instances))
+                for i in range(questions_to_add):
+                    accumulated_questions.append(new_questions[i])
+                    used_indices.add(available_indices[i])
+
+                logger.info(
+                    f"Accumulated {len(accumulated_questions)}/{num_questions} questions "
+                    f"(+{questions_to_add} this round, attempt {attempt + 1}/{max_retries})"
+                )
+
+                # Check if we're done
+                if len(accumulated_questions) >= num_questions:
+                    logger.debug(f"Successfully generated {num_questions} questions across {attempt + 1} attempts")
+                    return accumulated_questions[:num_questions]
+
+                # Add small delay before next retry
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(0.5)
+
+            except Exception as e:
+                logger.warning(f"Error during generation (attempt {attempt + 1}/{max_retries}): {e}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(0.5)
+                continue
+
+        # Reached max retries - return what we have
+        if accumulated_questions:
+            logger.warning(
+                f"Only generated {len(accumulated_questions)}/{num_questions} questions "
+                f"after {max_retries} attempts, returning partial results"
+            )
+            return accumulated_questions
+        else:
+            logger.error(f"Failed to generate any questions after {max_retries} attempts")
             return []
 
     def _extract_questions(self, generated_text: str) -> List[str]:
@@ -452,12 +715,20 @@ class KMeansQuestionGenerator:
         """
         Process a single table: cluster rows and generate questions.
 
+        Two modes:
+        1. Cluster mode (use_centroid_mode=False):
+           - Generate 1 question per cluster (k questions total)
+        2. Centroid mode (use_centroid_mode=True):
+           - Generate k questions from header + k centroid instances
+           - Each question focuses on one specific centroid instance
+
         Args:
             table: Table dictionary
             mode: Representation mode
             max_new_tokens: Max tokens per generation
             temperature: Sampling temperature
             max_retries: Max retry attempts
+            lang: Language code
 
         Returns:
             Result dictionary or None if failed
@@ -472,40 +743,65 @@ class KMeansQuestionGenerator:
             logger.warning(f"Table {original_id} has no instances, skipping")
             return None
 
-        # Step 1: Cluster and select representative rows
-        selected_rows, cluster_assignments = self.cluster_and_select_rows(instances, header)
+        if self.use_centroid_mode:
+            # Centroid Mode: Generate k questions from header + k centroid instances
+            # Step 1: Select k centroid instances
+            centroid_instances = self.select_centroid_instances(instances, header)
 
-        # Step 2: Generate 1 question per cluster
-        all_questions = []
-        for cluster_id, cluster_indices in enumerate(cluster_assignments):
-            if len(cluster_indices) == 0:
-                continue
+            # Step 2: Generate k questions from header + centroid instances
+            # The generate_centroid_questions method has internal retry logic
+            all_questions = await self.generate_centroid_questions(
+                header=header,
+                centroid_instances=centroid_instances,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                lang=lang,
+                max_retries=max_retries
+            )
 
-            # Get all instances in this cluster
-            cluster_instances = [instances[idx] for idx in cluster_indices]
+            if not all_questions:
+                logger.warning(f"No questions generated for table {original_id} in centroid mode")
+                return None
 
-            # Generate 1 question for this cluster
-            for attempt in range(max_retries):
-                try:
-                    questions = await self.generate_cluster_questions(
-                        header=header,
-                        cluster_instances=cluster_instances,
-                        max_new_tokens=max_new_tokens,
-                        temperature=temperature,
-                        lang=lang
-                    )
-                    if questions:
-                        all_questions.extend(questions)
-                        break
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        logger.error(f"Failed to generate question for cluster {cluster_id} after {max_retries} attempts: {e}")
-                    else:
-                        await asyncio.sleep(1)
+            # Use centroid instances as selected rows
+            selected_rows = centroid_instances
 
-        if not all_questions:
-            logger.warning(f"No questions generated for table {original_id}")
-            return None
+        else:
+            # Cluster Mode: Generate 1 question per cluster
+            # Step 1: Cluster and select representative rows
+            selected_rows, cluster_assignments = self.cluster_and_select_rows(instances, header)
+
+            # Step 2: Generate 1 question per cluster
+            all_questions = []
+            for cluster_id, cluster_indices in enumerate(cluster_assignments):
+                if len(cluster_indices) == 0:
+                    continue
+
+                # Get all instances in this cluster
+                cluster_instances = [instances[idx] for idx in cluster_indices]
+
+                # Generate 1 question for this cluster
+                for attempt in range(max_retries):
+                    try:
+                        questions = await self.generate_cluster_questions(
+                            header=header,
+                            cluster_instances=cluster_instances,
+                            max_new_tokens=max_new_tokens,
+                            temperature=temperature,
+                            lang=lang
+                        )
+                        if questions:
+                            all_questions.extend(questions)
+                            break
+                    except Exception as e:
+                        if attempt == max_retries - 1:
+                            logger.error(f"Failed to generate question for cluster {cluster_id} after {max_retries} attempts: {e}")
+                        else:
+                            await asyncio.sleep(1)
+
+            if not all_questions:
+                logger.warning(f"No questions generated for table {original_id}")
+                return None
 
         # Step 3: Create representation (partial table + questions)
         representation = self.create_representation(
@@ -515,7 +811,7 @@ class KMeansQuestionGenerator:
             mode=mode,
         )
 
-        # Create table_contents with original instances (for compatibility)
+        # Create table_contents with selected rows
         table_contents = self.table_to_csv_text(header, selected_rows)
 
         # Create output record
@@ -529,9 +825,11 @@ class KMeansQuestionGenerator:
                 "header": header,
                 "instances": instances,
                 "k_clusters": self.k_clusters,
-                "include_diverse": self.include_diverse,
-                "max_instances_per_cluster": self.max_instances_per_cluster,
+                "use_centroid_mode": self.use_centroid_mode,
+                "include_diverse": self.include_diverse if not self.use_centroid_mode else None,
+                "max_instances_per_cluster": self.max_instances_per_cluster if not self.use_centroid_mode else None,
                 "use_header_augmentation": self.use_header_augmentation,
+                "header_weight": self.header_weight if self.use_header_augmentation else None,
                 "num_selected_rows": len(selected_rows),
                 "num_original_rows": len(instances),
             },
@@ -592,11 +890,13 @@ class KMeansQuestionGenerator:
 
         # Determine output filename
         input_stem = Path(input_file).stem
-        output_file = Path(output_dir) / f"{input_stem}_kmeans_k{self.k_clusters}.jsonl"
+        mode_suffix = "centroid" if self.use_centroid_mode else "cluster"
+        output_file = Path(output_dir) / f"{input_stem}_kmeans_k{self.k_clusters}_{mode_suffix}.jsonl"
 
         logger.info(f"Processing {len(data)} tables...")
         logger.info(f"Mode: {mode}")
         logger.info(f"K-means clusters: {self.k_clusters}")
+        logger.info(f"Question generation mode: {mode_suffix}")
         logger.info(f"Batch size: {batch_size}")
 
         results = []
@@ -694,13 +994,28 @@ def parse_args():
         "--use_header_augmentation",
         action="store_true",
         default=True,
-        help="Augment rows with header info for embedding (e.g., 'Country: USA; Pop: 330M')"
+        help="Use header-aware fusion for embedding: E_fused = λ*E_header + (1-λ)*E_row"
     )
     parser.add_argument(
         "--no_header_augmentation",
         dest="use_header_augmentation",
         action="store_false",
         help="Do not augment rows with header (use raw CSV for embedding)"
+    )
+    parser.add_argument(
+        "--header_weight",
+        type=float,
+        default=0.2,
+        help="Weight (λ) for header embedding in fusion (default: 0.2). "
+             "E_fused = λ*E_header + (1-λ)*E_row. Range: 0.0-1.0"
+    )
+    parser.add_argument(
+        "--use_centroid_mode",
+        action="store_true",
+        default=False,
+        help="Use centroid mode for question generation. "
+             "If set, generate k questions from header + k centroid instances (one per instance). "
+             "If not set (default), generate 1 question per cluster (cluster mode)."
     )
     parser.add_argument(
         "--mode",
@@ -728,7 +1043,7 @@ def parse_args():
     parser.add_argument(
         "--max_new_tokens",
         type=int,
-        default=128,
+        default=512,
         help="Maximum tokens to generate"
     )
     parser.add_argument(
@@ -740,13 +1055,13 @@ def parse_args():
     parser.add_argument(
         "--timeout",
         type=float,
-        default=300.0,
+        default=500.0,
         help="Request timeout in seconds"
     )
     parser.add_argument(
         "--max_retries",
         type=int,
-        default=10,
+        default=15,
         help="Maximum retry attempts for failed generations"
     )
     return parser.parse_args()
@@ -776,8 +1091,10 @@ async def main():
         include_diverse=args.include_diverse,
         max_instances_per_cluster=args.max_instances_per_cluster,
         use_header_augmentation=args.use_header_augmentation,
+        header_weight=args.header_weight,
         max_concurrent=args.max_concurrent,
         timeout=args.timeout,
+        use_centroid_mode=args.use_centroid_mode,
     )
     dataset_name = Path(args.output_dir).stem
     logger.info(f"current dataset: {dataset_name}")
