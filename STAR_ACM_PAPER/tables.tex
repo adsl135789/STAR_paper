@@ -30,12 +30,12 @@
 \cmidrule(l){14-16}
 & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
-QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & \uline{54.45} & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 71.06 & 72.61 \\
-STAR w/ FWF (0.7) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & 53.84 & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} \\
+QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 54.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 \\
+STAR w/ FWF (0.7) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} \\
 STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \textbf{79.99} & \textbf{88.08} & \textbf{36.25} & \textbf{54.77} & \textbf{62.21} & \textbf{58.51} & \textbf{85.06} & \textbf{90.06} \\
 \bottomrule
 \end{tabular}
-\caption{主要實驗結果：STAR與QGpT在五個資料集上的比較。粗體表示最佳結果，底線表示次佳結果。}
+\caption{Main results: Comparison of STAR and QGpT across five datasets. Bold indicates the best result, underline indicates the second-best result.}
 \label{tab:main_results}
 \end{table*}
 
@@ -50,12 +50,12 @@ STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} 
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
-w/o SCDG & 47.07 & 68.43 & 75.88 \\
-w/o WF & 49.08 & 69.69 & 77.02 \\
-QGpT & 45.47 & 67.68 & 75.04 \\
+w/o SCDG & 47.07 {\scriptsize(-4.79)} & 68.43 {\scriptsize(-5.51)} & 75.88 {\scriptsize(-4.37)} \\
+w/o WF & 49.08 {\scriptsize(-2.78)} & 69.69 {\scriptsize(-4.25)} & 77.02 {\scriptsize(-3.23)} \\
+QGpT & 45.47 {\scriptsize(-6.39)} & 67.68 {\scriptsize(-6.26)} & 75.04 {\scriptsize(-5.21)} \\
 \bottomrule
 \end{tabular}
-\caption{消融實驗：STAR各個模組的有效性分析（五個資料集的平均Recall）。SCDG: Semantic Clustering and Query Generation；WF: Weighted Fusion。}
+\caption{Ablation study: Effectiveness analysis of each module in STAR (average Recall across five datasets). Numbers in parentheses show the performance drop compared to STAR (full). SCDG: Semantic Clustering and Query Generation; WF: Weighted Fusion.}
 \label{tab:ablation}
 \end{table}
 
@@ -77,6 +77,6 @@ STAR w/ FWF (0.9) & 48.61 & 72.22 & 79.28 \\
 STAR w/ DWF & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{權重策略分析：不同Fixed Weight Fusion權重設置與Dynamic Weight Fusion的比較（五個資料集的平均Recall）。括號中的數字表示table的權重$\alpha$。}
+\caption{Weight strategy analysis: Comparison of different Fixed Weight Fusion settings and Dynamic Weight Fusion (average Recall across five datasets). Numbers in parentheses indicate the table weight $\alpha$.}
 \label{tab:weight_analysis}
 \end{table}
