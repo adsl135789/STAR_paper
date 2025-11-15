@@ -140,11 +140,17 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG模組，結合語義聚類和聚類引導的查詢生成。
 
 \textbf{Header-aware K-means Clustering:}
-我們首先將每個表格列 $\mathbf{r}_i$ 與表頭 $\mathcal{H}$ 拼接，構成header-aware representation，然後使用預訓練的embedding模型（如BGE-M3）對其進行編碼，得到embedding向量 $\mathbf{e}_i$：
+我們首先使用預訓練的embedding模型（如BGE-M3）分別對表頭 $\mathcal{H}$ 和每個表格列 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和row embedding $\mathbf{e}_{\mathbf{r}_i}$：
+\begin{align}
+\mathbf{e}_{\mathcal{H}} &= \text{Encoder}(\mathcal{H}) \\
+\mathbf{e}_{\mathbf{r}_i} &= \text{Encoder}(\mathbf{r}_i)
+\end{align}
+
+然後，我們將這兩個embedding進行加權組合，構成header-aware representation：
 \begin{equation}
-\mathbf{e}_i = \text{Encoder}(\mathcal{H} \oplus \mathbf{r}_i)
+\mathbf{e}_i = \alpha \cdot \mathbf{e}_{\mathcal{H}} + (1-\alpha) \cdot \mathbf{e}_{\mathbf{r}_i}
 \end{equation}
-其中 $\oplus$ 表示拼接操作。
+其中 $\alpha$ 是控制header和row相對重要性的超參數。這種設計使得每個row的表示既包含其自身的語義資訊，也融合了表頭的結構資訊。
 
 接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
 \begin{equation}
@@ -209,7 +215,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 (1) \textbf{BGE-M3}\cite{bge}：先進的多語言密集檢索模型，直接對表格進行編碼；
 (2) \textbf{QGpT}\cite{qgpt}：使用LLM生成synthetic queries進行表格檢索的方法。
 
-\textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在Fixed Weight Fusion中，我們設置 $\alpha=0.7$（table權重）；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
+\textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置table權重為0.7；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
 
 \subsection{主要實驗結果}
 
