@@ -98,7 +98,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 表格檢索（Table Retrieval）是指根據自然語言查詢從大規模語料庫中檢索出最相關的表格，這項任務在問答系統、資料分析和知識提取等應用中扮演著重要角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨巨大挑戰。傳統的密集檢索方法直接將表格序列化為文字，但這種方式往往忽略了表格的結構特性和語義豐富性，導致檢索效果不佳。
 
-為了緩解這一問題，近期的研究開始探索利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。其中，QGpT\cite{qgpt}是一個代表性方法，它透過從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。儘管QGpT取得了一定的成功，但我們發現其存在兩個關鍵缺陷：
+為了緩解這一問題，近期的研究開始探索利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。其中，QGpT\cite{liang-etal-2025-improving-table}是一個代表性方法，它透過從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。儘管QGpT取得了一定的成功，但我們發現其存在兩個關鍵缺陷：
 
 \textbf{（1）啟發式的部分表格採樣：}QGpT採用簡單的top-k策略直接截取表格的前k列作為partial table，這種做法可能導致選取的列之間存在語義冗餘或缺乏代表性，無法充分覆蓋表格的語義多樣性。
 
@@ -117,17 +117,17 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \label{sec:related}
 
 \subsection{表格檢索}
-表格檢索旨在從大規模語料庫中檢索與使用者查詢最相關的表格。早期方法主要基於稀疏檢索技術，如BM25\cite{bm25}，但這些方法難以捕捉深層的語義關聯。隨著深度學習的發展，密集檢索方法\cite{dpr,contriever}開始被應用於表格檢索任務。這些方法通常將表格線性化為文字序列，然後使用預訓練語言模型進行編碼。
+表格檢索旨在從大規模語料庫中檢索與使用者查詢最相關的表格。早期方法主要基於稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，但這些方法難以捕捉深層的語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin2020dense,izacard2022unsupervised}開始被應用於表格檢索任務。這些方法通常將表格線性化為文字序列，然後使用預訓練語言模型進行編碼。
 
-為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法。TABERT\cite{tabert}和TaBERT\cite{tabert}透過設計專門的注意力機制來建模表格的行列結構。然而，這些方法往往需要大規模的預訓練，計算成本較高。
+為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法。TaBERT\cite{yin2020tabert}透過設計專門的注意力機制來建模表格的行列結構。然而，這些方法往往需要大規模的預訓練，計算成本較高。
 
 \subsection{查詢生成與資料增強}
-查詢生成（Query Generation）是一種有效的資料增強技術，已被廣泛應用於資訊檢索和問答系統中。GPL\cite{gpl}提出使用生成式模型為文件生成偽查詢（pseudo queries），從而在無標註資料的情況下訓練檢索模型。InPars\cite{inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。
+查詢生成（Query Generation）是一種有效的資料增強技術，已被廣泛應用於資訊檢索和問答系統中。GPL\cite{wang2022gpl}提出使用生成式模型為文件生成偽查詢（pseudo queries），從而在無標註資料的情況下訓練檢索模型。InPars\cite{bonifacio2022inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。
 
-在表格檢索領域，QGpT\cite{qgpt}首次系統地應用了LLM進行合成問題生成。該方法透過為partial table生成相關問題，試圖彌合查詢與表格之間的語義鴻溝。然而，QGpT採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
+在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用了LLM進行合成問題生成。該方法透過為partial table生成相關問題，試圖彌合查詢與表格之間的語義鴻溝。然而，QGpT採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
 
 \subsection{聚類在資訊檢索中的應用}
-聚類技術被廣泛應用於資訊檢索中以提升檢索效率和效果。一些研究\cite{clustering_retrieval}使用聚類方法對文件集合進行組織，從而加速檢索過程。在表格領域，聚類可以用於識別表格中的語義模式和冗餘資訊。本文首次將聚類技術應用於表格實例選擇，以提升partial table的代表性和多樣性。
+聚類技術被廣泛應用於資訊檢索中以提升檢索效率和效果。一些研究\cite{liu2004cluster}使用聚類方法對文件集合進行組織，從而加速檢索過程。在表格領域，聚類可以用於識別表格中的語義模式和冗餘資訊。本文首次將聚類技術應用於表格實例選擇，以提升partial table的代表性和多樣性。
 
 
 \section{Methodology}
@@ -207,13 +207,13 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \textbf{資料集：}我們在五個廣泛使用的表格檢索基準資料集上評估STAR：
 (1) \textbf{Mimo (ch)}：中文表格檢索資料集；
 (2) \textbf{Mimo (en)}：英文表格檢索資料集；
-(3) \textbf{OTTQA}\cite{ottqa}：開放域表格問答資料集；
-(4) \textbf{FetaQA}\cite{fetaqa}：基於表格的問答資料集；
-(5) \textbf{E2E-WTQ}\cite{e2ewtq}：端到端的表格問答資料集。
+(3) \textbf{OTTQA}\cite{chenopen}：開放域表格問答資料集；
+(4) \textbf{FetaQA}\cite{nan2022fetaqa}：基於表格的問答資料集；
+(5) \textbf{E2E-WTQ}\cite{pasupat2015compositional}：端到端的表格問答資料集。
 
 \textbf{Baselines：}我們與以下方法進行比較：
-(1) \textbf{BGE-M3}\cite{bge}：先進的多語言密集檢索模型，直接對表格進行編碼；
-(2) \textbf{QGpT}\cite{qgpt}：使用LLM生成synthetic queries進行表格檢索的方法。
+(1) \textbf{BGE-M3}\cite{xiao2023cpack}：先進的多語言密集檢索模型，直接對表格進行編碼；
+(2) \textbf{QGpT}\cite{liang-etal-2025-improving-table}：使用LLM生成synthetic queries進行表格檢索的方法。
 
 \textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置table權重為0.7；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
 
@@ -274,69 +274,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 This work was supported in part by the National Science and Technology Council, Taiwan, under Grants NSTC 113-2221-E-005-056-MY3 and NSTC 113-2634-F-005-001.
 
 \bibliographystyle{ACM-Reference-Format}
-\begin{thebibliography}{10}
-
-\bibitem{qgpt}
-Wang, Yihan, Zhe Chen, and Hao Yan.
-\newblock QGpT: Question Generation with Pre-trained Transformers for Table Retrieval.
-\newblock In {\em Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 1234--1245, 2023.
-
-\bibitem{bm25}
-Robertson, Stephen E. and Hugo Zaragoza.
-\newblock The Probabilistic Relevance Framework: BM25 and Beyond.
-\newblock {\em Foundations and Trends in Information Retrieval}, 3(4):333--389, 2009.
-
-\bibitem{dpr}
-Karpukhin, Vladimir, Barlas O\u{g}uz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih.
-\newblock Dense Passage Retrieval for Open-Domain Question Answering.
-\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, pages 6769--6781, 2020.
-
-\bibitem{contriever}
-Izacard, Gautier, Mathilde Caron, Lucas Hosseini, Sebastian Riedel, Piotr Bojanowski, Armand Joulin, and Edouard Grave.
-\newblock Unsupervised Dense Information Retrieval with Contrastive Learning.
-\newblock In {\em Transactions on Machine Learning Research (TMLR)}, 2022.
-
-\bibitem{tabert}
-Yin, Pengcheng, Graham Neubig, Wen-tau Yih, and Sebastian Riedel.
-\newblock TaBERT: Pretraining for Joint Understanding of Textual and Tabular Data.
-\newblock In {\em Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 8413--8426, 2020.
-
-\bibitem{gpl}
-Wang, Kexin, Nandan Thakur, Nils Reimers, and Iryna Gurevych.
-\newblock GPL: Generative Pseudo Labeling for Unsupervised Domain Adaptation of Dense Retrieval.
-\newblock In {\em Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics (NAACL)}, pages 2345--2360, 2022.
-
-\bibitem{inpars}
-Bonifacio, Luiz, Hugo Abonizio, Marzieh Fadaee, and Rodrigo Nogueira.
-\newblock InPars: Data Augmentation for Information Retrieval using Large Language Models.
-\newblock In {\em Proceedings of the 45th International ACM SIGIR Conference on Research and Development in Information Retrieval}, pages 2319--2325, 2022.
-
-\bibitem{clustering_retrieval}
-Liu, Xiaoyong and W. Bruce Croft.
-\newblock Cluster-Based Retrieval Using Language Models.
-\newblock In {\em Proceedings of the 27th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval}, pages 186--193, 2004.
-
-\bibitem{ottqa}
-Chen, Wenhu, Hongmin Wang, Jianshu Chen, Yunkai Zhang, Hong Wang, Shiyang Li, Xiyou Zhou, and William Yang Wang.
-\newblock Open Question Answering Over Tables and Text.
-\newblock In {\em Proceedings of the 9th International Conference on Learning Representations (ICLR)}, 2021.
-
-\bibitem{fetaqa}
-Nan, Linyong, Chiachun Hsieh, Ziming Mao, Xi Victoria Lin, Neha Verma, Rui Zhang, Wojciech Kry{\'s}ci{\'n}ski, Hailey Schoelkopf, Riley Kong, Xiangru Tang, Mutethia Mutuma, Ben Rosand, Isabel Trindade, Renusree Bandaru, Jacob Cunningham, Caiming Xiong, and Dragomir Radev.
-\newblock FeTaQA: Free-form Table Question Answering.
-\newblock In {\em Transactions of the Association for Computational Linguistics (TACL)}, 10:35--49, 2022.
-
-\bibitem{e2ewtq}
-Pasupat, Panupong and Percy Liang.
-\newblock Compositional Semantic Parsing on Semi-Structured Tables.
-\newblock In {\em Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 1470--1480, 2015.
-
-\bibitem{bge}
-Xiao, Shitao, Zheng Liu, Peitian Zhang, and Niklas Muennighoff.
-\newblock C-Pack: Packaged Resources To Advance General Chinese Embedding.
-\newblock {\em arXiv preprint arXiv:2309.07597}, 2023.
-
-\end{thebibliography}
+\bibliography{references}
 
 \end{document}
 \endinput
