@@ -4,7 +4,6 @@
 %%
 % \documentclass[sigconf,review,anonymous]{acmart}
 \documentclass[sigconf, review]{acmart}
-
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{ulem}
@@ -13,7 +12,11 @@
   \providecommand\BibTeX{{%
     Bib\TeX}}}
 
-
+\usepackage{xeCJK}
+\setCJKmainfont[AutoFakeBold=2,AutoFakeSlant=.4]{AR PL UKai TW}
+\setmainfont{Times New Roman}
+\XeTeXlinebreaklocale "zh" %這兩行一定要加，中文才能自動換行
+\XeTeXlinebreakskip = 0pt plus 1pt
 
 \begin{document}
 
