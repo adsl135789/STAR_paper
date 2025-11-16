@@ -64,13 +64,19 @@
     <div class="container">
         <h1>🌟 STAR Framework Flowcharts 🌟</h1>
         <div class="button-group">
+            <button class="toggle-btn" onclick="showComparison()">QGpT vs STAR Comparison</button>
             <button class="toggle-btn" onclick="showModern()">Modern Style (2025)</button>
             <button class="toggle-btn" onclick="showDetailed()">Detailed Style</button>
         </div>
     </div>
 
     <div class="container">
-        <div id="modern" class="flowchart">
+        <div id="comparison" class="flowchart">
+            <object data="star_comparison_flowchart.svg" type="image/svg+xml" width="1200" height="700">
+                Your browser does not support SVG
+            </object>
+        </div>
+        <div id="modern" class="flowchart hidden">
             <object data="star_flowchart_modern.svg" type="image/svg+xml" width="900" height="650">
                 Your browser does not support SVG
             </object>
@@ -83,11 +89,18 @@
     </div>
 
     <script>
+        function showComparison() {
+            document.getElementById('comparison').classList.remove('hidden');
+            document.getElementById('modern').classList.add('hidden');
+            document.getElementById('detailed').classList.add('hidden');
+        }
         function showModern() {
+            document.getElementById('comparison').classList.add('hidden');
             document.getElementById('modern').classList.remove('hidden');
             document.getElementById('detailed').classList.add('hidden');
         }
         function showDetailed() {
+            document.getElementById('comparison').classList.add('hidden');
             document.getElementById('detailed').classList.remove('hidden');
             document.getElementById('modern').classList.add('hidden');
         }

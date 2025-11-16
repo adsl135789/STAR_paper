@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1200" height="700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="grad-input" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad-qgpt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad-star" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad-llm" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fee140;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad-output" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#38f9d7;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Shadow -->
+    <filter id="shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Arrow markers -->
+    <marker id="arrow-qgpt" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#f5576c" />
+    </marker>
+    <marker id="arrow-star" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#00f2fe" />
+    </marker>
+
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2d3748; }
+      .label { font-family: Arial, sans-serif; font-size: 14px; font-weight: 600; fill: white; }
+      .label-dark { font-family: Arial, sans-serif; font-size: 13px; font-weight: 600; fill: #2d3748; }
+      .small { font-family: Arial, sans-serif; font-size: 11px; fill: white; }
+      .tiny { font-family: Arial, sans-serif; font-size: 10px; fill: #718096; }
+      .section-title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" class="title">Offline Index Stage: QGpT vs STAR</text>
+
+  <!-- Shared Input Table -->
+  <g transform="translate(40, 80)">
+    <rect x="0" y="0" width="140" height="180" rx="12" fill="url(#grad-input)" filter="url(#shadow)"/>
+    <text x="70" y="25" text-anchor="middle" class="label">Input Table</text>
+    <!-- Table icon -->
+    <rect x="20" y="40" width="100" height="15" fill="white" opacity="0.9" rx="3"/>
+    <rect x="20" y="60" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <rect x="20" y="75" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <rect x="20" y="90" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <rect x="20" y="105" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <rect x="20" y="120" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <rect x="20" y="135" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <rect x="20" y="150" width="100" height="12" fill="white" opacity="0.7" rx="2"/>
+    <!-- Vertical divider for columns -->
+    <line x1="70" y1="40" x2="70" y2="162" stroke="rgba(102,126,234,0.3)" stroke-width="2"/>
+  </g>
+
+  <!-- Arrow to QGpT -->
+  <path d="M 190 140 L 230 120" stroke="#f5576c" stroke-width="2.5" fill="none" marker-end="url(#arrow-qgpt)"/>
+
+  <!-- Arrow to STAR -->
+  <path d="M 190 200 L 230 220" stroke="#00f2fe" stroke-width="2.5" fill="none" marker-end="url(#arrow-star)"/>
+
+  <!-- ========== QGpT Path (Top) ========== -->
+  <text x="240" y="85" class="section-title" fill="#f5576c">QGpT</text>
+
+  <!-- QGpT Step 1: Heuristic Cut -->
+  <g transform="translate(240, 100)">
+    <rect x="0" y="0" width="110" height="100" rx="10" fill="url(#grad-qgpt)" filter="url(#shadow)"/>
+    <text x="55" y="18" text-anchor="middle" class="small">Top-k Cut</text>
+    <!-- Scissor/cut icon - table being cut -->
+    <rect x="15" y="28" width="70" height="10" fill="white" opacity="0.9" rx="2"/>
+    <line x1="15" y1="48" x2="85" y2="48" stroke="white" stroke-width="2" stroke-dasharray="3,2"/>
+    <text x="55" y="58" text-anchor="middle" style="font-size: 18px; fill: white;">✂</text>
+    <rect x="15" y="65" width="70" height="8" fill="white" opacity="0.5" rx="2"/>
+    <rect x="15" y="76" width="70" height="8" fill="white" opacity="0.5" rx="2"/>
+    <text x="55" y="94" text-anchor="middle" class="small">Partial Table</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 360 150 L 385 150" stroke="#f5576c" stroke-width="2.5" fill="none" marker-end="url(#arrow-qgpt)"/>
+
+  <!-- QGpT Step 1b: LLM -->
+  <g transform="translate(395, 115)">
+    <rect x="0" y="0" width="90" height="70" rx="10" fill="url(#grad-llm)" filter="url(#shadow)"/>
+    <!-- Brain icon -->
+    <circle cx="45" cy="30" r="15" fill="white" opacity="0.9"/>
+    <path d="M 35 30 Q 35 23, 42 23 Q 48 23, 48 30" stroke="#fa709a" stroke-width="2" fill="none"/>
+    <circle cx="40" cy="28" r="1.5" fill="#fa709a"/>
+    <circle cx="50" cy="28" r="1.5" fill="#fa709a"/>
+    <text x="45" y="60" text-anchor="middle" class="small">LLM</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 495 150 L 520 150" stroke="#f5576c" stroke-width="2.5" fill="none" marker-end="url(#arrow-qgpt)"/>
+
+  <!-- QGpT Step 1c: Queries -->
+  <g transform="translate(530, 125)">
+    <rect x="0" y="0" width="80" height="50" rx="8" fill="url(#grad-qgpt)" filter="url(#shadow)" opacity="0.8"/>
+    <!-- Document icons -->
+    <rect x="20" y="12" width="40" height="25" fill="white" opacity="0.9" rx="3"/>
+    <line x1="25" y1="20" x2="55" y2="20" stroke="#f5576c" stroke-width="1.5"/>
+    <line x1="25" y1="26" x2="50" y2="26" stroke="#f5576c" stroke-width="1"/>
+  </g>
+
+  <!-- QGpT Step 2: Concat -->
+  <g transform="translate(630, 100)">
+    <rect x="0" y="0" width="100" height="100" rx="10" fill="url(#grad-qgpt)" filter="url(#shadow)" opacity="0.7"/>
+    <text x="50" y="20" text-anchor="middle" class="small">Concatenate</text>
+    <!-- Two boxes merging -->
+    <rect x="15" y="30" width="30" height="20" fill="white" opacity="0.9" rx="3"/>
+    <rect x="55" y="30" width="30" height="20" fill="white" opacity="0.9" rx="3"/>
+    <text x="50" y="63" text-anchor="middle" style="font-size: 20px; fill: white;">+</text>
+    <rect x="25" y="70" width="50" height="15" fill="white" opacity="0.95" rx="3"/>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 740 150 L 770 150" stroke="#f5576c" stroke-width="2.5" fill="none" marker-end="url(#arrow-qgpt)"/>
+
+  <!-- QGpT Step 2b: Encoder -->
+  <g transform="translate(780, 115)">
+    <rect x="0" y="0" width="90" height="70" rx="10" fill="url(#grad-qgpt)" filter="url(#shadow)"/>
+    <text x="45" y="18" text-anchor="middle" class="small">Encoder</text>
+    <!-- Encoder icon - layered circles -->
+    <circle cx="30" cy="42" r="8" fill="white" opacity="0.7"/>
+    <circle cx="45" cy="42" r="8" fill="white" opacity="0.85"/>
+    <circle cx="60" cy="42" r="8" fill="white" opacity="0.7"/>
+    <text x="45" y="62" text-anchor="middle" class="small">BGE-M3</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 880 150 L 910 150" stroke="#f5576c" stroke-width="2.5" fill="none" marker-end="url(#arrow-qgpt)"/>
+
+  <!-- QGpT Output -->
+  <g transform="translate(920, 125)">
+    <rect x="0" y="0" width="100" height="50" rx="10" fill="url(#grad-output)" filter="url(#shadow)"/>
+    <text x="50" y="20" text-anchor="middle" class="label-dark">Table Rep</text>
+    <polygon points="50,28 55,35 50,40 45,35" fill="#43e97b"/>
+  </g>
+
+  <!-- ========== STAR Path (Bottom) ========== -->
+  <text x="240" y="385" class="section-title" fill="#00f2fe">STAR</text>
+
+  <!-- STAR Step 1: K-means Clustering -->
+  <g transform="translate(240, 400)">
+    <rect x="0" y="0" width="130" height="110" rx="10" fill="url(#grad-star)" filter="url(#shadow)"/>
+    <text x="65" y="18" text-anchor="middle" class="small">Header-aware</text>
+    <text x="65" y="32" text-anchor="middle" class="small">K-means</text>
+    <!-- Clustering icon - grouped circles with different colors -->
+    <circle cx="35" cy="55" r="7" fill="#FFD700" opacity="0.9"/>
+    <circle cx="52" cy="50" r="7" fill="#FFD700" opacity="0.9"/>
+    <circle cx="43" cy="68" r="7" fill="#FFD700" opacity="0.9"/>
+
+    <circle cx="82" cy="55" r="7" fill="#FF69B4" opacity="0.9"/>
+    <circle cx="99" cy="50" r="7" fill="#FF69B4" opacity="0.9"/>
+    <circle cx="90" cy="68" r="7" fill="#FF69B4" opacity="0.9"/>
+
+    <text x="65" y="94" text-anchor="middle" class="small">α=0.2</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 380 455 L 410 455" stroke="#00f2fe" stroke-width="2.5" fill="none" marker-end="url(#arrow-star)"/>
+
+  <!-- STAR Step 1b: Clustered Tables -->
+  <g transform="translate(420, 425)">
+    <rect x="0" y="0" width="100" height="60" rx="8" fill="url(#grad-star)" filter="url(#shadow)" opacity="0.8"/>
+    <text x="50" y="15" text-anchor="middle" class="small">k Clusters</text>
+    <!-- Multiple mini tables -->
+    <rect x="12" y="22" width="28" height="25" fill="#FFD700" opacity="0.8" rx="2"/>
+    <rect x="45" y="22" width="28" height="25" fill="#FF69B4" opacity="0.8" rx="2"/>
+    <rect x="28" y="30" width="28" height="8" fill="white" opacity="0.6" rx="1"/>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 530 455 L 560 455" stroke="#00f2fe" stroke-width="2.5" fill="none" marker-end="url(#arrow-star)"/>
+
+  <!-- STAR Step 1c: LLM -->
+  <g transform="translate(570, 420)">
+    <rect x="0" y="0" width="90" height="70" rx="10" fill="url(#grad-llm)" filter="url(#shadow)"/>
+    <!-- Brain icon -->
+    <circle cx="45" cy="30" r="15" fill="white" opacity="0.9"/>
+    <path d="M 35 30 Q 35 23, 42 23 Q 48 23, 48 30" stroke="#fa709a" stroke-width="2" fill="none"/>
+    <circle cx="40" cy="28" r="1.5" fill="#fa709a"/>
+    <circle cx="50" cy="28" r="1.5" fill="#fa709a"/>
+    <text x="45" y="60" text-anchor="middle" class="small">CGQG</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 670 455 L 700 455" stroke="#00f2fe" stroke-width="2.5" fill="none" marker-end="url(#arrow-star)"/>
+
+  <!-- STAR Step 1d: Queries -->
+  <g transform="translate(710, 430)">
+    <rect x="0" y="0" width="80" height="50" rx="8" fill="url(#grad-star)" filter="url(#shadow)" opacity="0.8"/>
+    <rect x="20" y="12" width="40" height="25" fill="white" opacity="0.9" rx="3"/>
+    <line x1="25" y1="20" x2="55" y2="20" stroke="#00f2fe" stroke-width="1.5"/>
+    <line x1="25" y1="26" x2="50" y2="26" stroke="#00f2fe" stroke-width="1"/>
+  </g>
+
+  <!-- STAR Step 2: Separate Encoding -->
+  <g transform="translate(240, 540)">
+    <!-- Partial table encoding -->
+    <rect x="0" y="0" width="90" height="80" rx="10" fill="url(#grad-star)" filter="url(#shadow)" opacity="0.7"/>
+    <text x="45" y="18" text-anchor="middle" class="small">Encoder</text>
+    <rect x="20" y="28" width="50" height="20" fill="white" opacity="0.9" rx="3"/>
+    <text x="45" y="45" text-anchor="middle" style="font-size: 10px; fill: #4facfe; font-weight: bold;">Table</text>
+    <text x="45" y="65" text-anchor="middle" class="small">E_t</text>
+  </g>
+
+  <g transform="translate(360, 540)">
+    <!-- Query encoding -->
+    <rect x="0" y="0" width="90" height="80" rx="10" fill="url(#grad-star)" filter="url(#shadow)" opacity="0.7"/>
+    <text x="45" y="18" text-anchor="middle" class="small">Encoder</text>
+    <rect x="20" y="28" width="50" height="20" fill="white" opacity="0.9" rx="3"/>
+    <text x="45" y="45" text-anchor="middle" style="font-size: 10px; fill: #4facfe; font-weight: bold;">Queries</text>
+    <text x="45" y="65" text-anchor="middle" class="small">E_q</text>
+  </g>
+
+  <!-- Arrows to WF -->
+  <path d="M 340 580 L 490 580 L 490 545" stroke="#00f2fe" stroke-width="2.5" fill="none" marker-end="url(#arrow-star)"/>
+  <path d="M 460 580 L 490 580" stroke="#00f2fe" stroke-width="2.5" fill="none"/>
+
+  <!-- STAR Step 2b: Weighted Fusion -->
+  <g transform="translate(480, 420)">
+    <rect x="0" y="0" width="120" height="115" rx="10" fill="url(#grad-star)" filter="url(#shadow)"/>
+    <text x="60" y="20" text-anchor="middle" class="label">WF Module</text>
+    <!-- Merge icon with weights -->
+    <circle cx="35" cy="50" r="12" fill="white" opacity="0.7"/>
+    <text x="35" y="55" text-anchor="middle" style="font-size: 10px; fill: #4facfe; font-weight: bold;">t</text>
+    <circle cx="85" cy="50" r="12" fill="white" opacity="0.7"/>
+    <text x="85" y="55" text-anchor="middle" style="font-size: 10px; fill: #4facfe; font-weight: bold;">q</text>
+    <circle cx="60" cy="75" r="15" fill="white" opacity="0.95"/>
+    <text x="60" y="80" text-anchor="middle" style="font-size: 16px; font-weight: bold; fill: #00f2fe;">⊕</text>
+    <text x="60" y="100" text-anchor="middle" class="small">FWF/DWF</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 610 477 L 640 477" stroke="#00f2fe" stroke-width="2.5" fill="none" marker-end="url(#arrow-star)"/>
+
+  <!-- STAR Output -->
+  <g transform="translate(650, 452)">
+    <rect x="0" y="0" width="100" height="50" rx="10" fill="url(#grad-output)" filter="url(#shadow)"/>
+    <text x="50" y="20" text-anchor="middle" class="label-dark">Table Rep</text>
+    <polygon points="50,25 56,34 50,41 44,34" fill="white" stroke="#43e97b" stroke-width="2"/>
+    <circle cx="45" cy="29" r="1.5" fill="#43e97b"/>
+    <circle cx="55" cy="29" r="1.5" fill="#43e97b"/>
+  </g>
+
+  <!-- Legend/Annotations -->
+  <rect x="50" y="650" width="1100" height="40" rx="8" fill="#f7fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="600" y="668" text-anchor="middle" class="tiny" font-weight="bold">Key Improvements:</text>
+  <text x="300" y="683" text-anchor="middle" class="tiny">① Semantic Clustering (vs. Heuristic Cut)</text>
+  <text x="600" y="683" text-anchor="middle" class="tiny">② Weighted Fusion (vs. Simple Concat)</text>
+  <text x="900" y="683" text-anchor="middle" class="tiny">③ Cluster-Guided Query Gen</text>
+
+</svg>
