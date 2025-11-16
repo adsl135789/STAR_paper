@@ -9,6 +9,7 @@
 \usepackage{ulem}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{newunicodechar}
 
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
@@ -17,10 +18,25 @@
 \usepackage{xeCJK}
 \setCJKmainfont[AutoFakeBold=2,AutoFakeSlant=.4]{AR PL UKai TW}
 \setmainfont{Times New Roman}
+\newfontfamily{\fallbackfont}{DejaVu Sans}
+\newunicodechar{✓}{{\fallbackfont ✓}}
+\newunicodechar{✗}{{\fallbackfont ✗}}
 \XeTeXlinebreaklocale "zh" %這兩行一定要加，中文才能自動換行
 \XeTeXlinebreakskip = 0pt plus 1pt
 
+\setcopyright{none}  % 移除版權聲明
+\settopmatter{printacmref=false}  % 移除摘要下方的引用資訊
+\renewcommand\footnotetextcopyrightpermission[1]{}  % 移除第一欄的版權註腳
+\pagestyle{plain}  % 移除頁首頁尾的會議資訊
+
 \begin{document}
+
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{TBD}
+\acmConference[TheWebConf '26]{The Web Conference 2026}{April 13–17, 2026}{Dubai, UAE}
+\acmISBN{TBD}
 
 % \title{STAR: Semantic Table Representation via Clustering and Attention-based Fusion for Table Retrieval}
 \title{STAR: Semantic Table Aggregation and Representation via Clustering and Weighted Fusion for Table Retrieval}
@@ -101,25 +117,40 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Introduction}
 \label{sec:introduction}
 
-表格檢索在問答系統和知識提取中扮演重要角色。近期研究透過大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。QGpT\cite{liang-etal-2025-improving-table}從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。然而，QGpT存在兩個關鍵缺陷：\textbf{(1) 啟發式的top-k採樣}可能導致語義冗餘；\textbf{(2) 簡單的拼接融合}缺乏細粒度語義整合。
+表格檢索（Table Retrieval）在問答系統、資料分析和知識提取等應用中扮演關鍵角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨挑戰。
 
-針對這些問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation）。STAR包含兩個核心模組：\textbf{(1) Semantic Clustering and Query Generation (SCDG)}採用header-aware K-means聚類確保實例的代表性和多樣性，並為不同聚類分別生成synthetic questions；\textbf{(2) Weighted Fusion (WF)}透過Fixed/Dynamic Weight Fusion實現table和queries的細粒度語義整合。實驗表明，STAR在五個基準資料集上顯著優於QGpT。
+近期研究開始探索利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。QGpT\cite{liang-etal-2025-improving-table}從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。然而，QGpT存在兩個關鍵缺陷：
+
+\textbf{(1) 啟發式的部分表格採樣：}QGpT採用簡單的top-k策略直接截取表格的前k列作為partial table，可能導致語義冗餘或缺乏代表性，無法充分覆蓋表格的語義多樣性。
+
+\textbf{(2) 粗糙的表示融合策略：}QGpT直接將partial table和synthetic queries拼接後送入編碼器，缺乏對不同資訊來源的細粒度語義整合。
+
+針對這些問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），包含兩個核心模組：\textbf{(1) Semantic Clustering and Query Generation (SCDG)}採用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為每個聚類分別生成synthetic questions；\textbf{(2) Weighted Fusion (WF)}透過Fixed Weight Fusion和Dynamic Weight Fusion實現table和queries的細粒度語義整合。
+
+在五個基準資料集（Mimo\_ch、Mimo\_en、OTTQA、FetaQA、E2E-WTQ）上的實驗表明，STAR在大多數資料集上顯著優於QGpT，驗證了語義聚類和自適應融合的有效性。
 
 
 \section{Related Works}
 \label{sec:related}
 
-早期表格檢索方法基於稀疏檢索（如BM25\cite{robertson2009probabilistic}），後演變為密集檢索\cite{karpukhin2020dense}和結構感知編碼（如TaBERT\cite{yin2020tabert}）。查詢生成技術（GPL\cite{wang2022gpl}、InPars\cite{bonifacio2022inpars}）被用於資料增強。QGpT\cite{liang-etal-2025-improving-table}首次將LLM應用於表格合成問題生成，但採用簡單的top-k採樣和拼接融合，限制了表達能力。本文首次將聚類技術\cite{liu2004cluster}應用於表格實例選擇，提升partial table的代表性。
+\subsection{表格檢索}
+早期表格檢索方法基於稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，但難以捕捉深層語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin2020dense}開始被應用於表格檢索任務。為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法，如TaBERT\cite{yin2020tabert}透過設計專門的注意力機制來建模表格的行列結構。
+
+\subsection{查詢生成與資料增強}
+查詢生成（Query Generation）是一種有效的資料增強技術。GPL\cite{wang2022gpl}提出使用生成式模型為文件生成偽查詢，從而在無標註資料的情況下訓練檢索模型。InPars\cite{bonifacio2022inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM進行合成問題生成，但採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
+
+\subsection{聚類在資訊檢索中的應用}
+聚類技術被廣泛應用於資訊檢索中以提升檢索效率和效果\cite{liu2004cluster}。本文首次將聚類技術應用於表格實例選擇，以提升partial table的代表性和多樣性。
 
 
 \section{Methodology}
 \label{sec:methodology}
 
-給定表格 $\mathcal{T}$ 包含表頭 $\mathcal{H}$ 和 $n$ 個實例 $\{\mathbf{r}_1, \ldots, \mathbf{r}_n\}$，以及使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索與 $q$ 最相關的表格。STAR包含兩個核心模組：(1) Semantic Clustering and Query Generation (SCDG)；(2) Weighted Fusion (WF)。
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架包含兩個核心模組：(1) Semantic Clustering and Query Generation (SCDG)，以及 (2) Weighted Fusion (WF)。
 
 \subsection{Semantic Clustering and Query Generation (SCDG)}
 
-QGpT採用top-k策略選取前k列作為partial table，可能造成語義冗餘。SCDG透過語義聚類和聚類引導的查詢生成解決此問題。
+QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG模組，結合語義聚類和聚類引導的查詢生成。
 
 \begin{figure*}[t]
 \centering
@@ -129,64 +160,191 @@ QGpT採用top-k策略選取前k列作為partial table，可能造成語義冗餘
 \end{figure*}
 
 \textbf{Header-aware K-means Clustering:}
-使用embedding模型（BGE-M3）對表頭 $\mathcal{H}$ 和每行 $\mathbf{r}_i$ 編碼：
+我們首先使用預訓練的embedding模型（如BGE-M3）分別對表頭 $\mathcal{H}$ 和每個表格列 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和row embedding $\mathbf{e}_{\mathbf{r}_i}$：
+\begin{align}
+\mathbf{e}_{\mathcal{H}} &= \text{Encoder}(\mathcal{H}) \\
+\mathbf{e}_{\mathbf{r}_i} &= \text{Encoder}(\mathbf{r}_i)
+\end{align}
+
+然後，我們將這兩個embedding進行加權組合，構成header-aware representation：
 \begin{equation}
-\mathbf{e}_i = \alpha \cdot \text{Encoder}(\mathcal{H}) + (1-\alpha) \cdot \text{Encoder}(\mathbf{r}_i)
+\mathbf{e}_i = \alpha \cdot \mathbf{e}_{\mathcal{H}} + (1-\alpha) \cdot \mathbf{e}_{\mathbf{r}_i}
 \end{equation}
-其中 $\alpha=0.2$ 控制header和row的相對重要性。對 $\{\mathbf{e}_1, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，分為 $k$ 個聚類 $\{C_1, \ldots, C_k\}$。對每個聚類 $C_j$，選取距離聚類中心最近的實例：
+其中 $\alpha$ 是控制header和row相對重要性的超參數（實驗中設置為0.2）。這種設計使得每個row的表示既包含其自身的語義資訊，也融合了表頭的結構資訊。
+
+接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
 \begin{equation}
 \mathbf{r}_j^* = \arg\min_{\mathbf{r}_i \in C_j} \|\mathbf{e}_i - \boldsymbol{\mu}_j\|^2
 \end{equation}
-構建partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \ldots, \mathbf{r}_k^*\}$ 既保持語義多樣性又具代表性。
+其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心點）。
 
 \textbf{Clustering-Guided Query Generation:}
-對每個聚類 $C_j$，構建clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，使用LLM生成synthetic question $q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))$。生成 $k$ 個questions $\{q_1, \ldots, q_k\}$，全面覆蓋表格語義空間。
+對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic question $q_j$：
+\begin{equation}
+q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
+\end{equation}
+
+這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic questions $\{q_1, q_2, \ldots, q_k\}$，每個問題都對應一個特定的語義聚類。這種方法確保生成的問題能夠全面覆蓋表格的不同語義方面，真正充當使用者查詢與表格之間的語義橋樑。
 
 \subsection{Weighted Fusion}
 
-分別編碼partial table和synthetic questions：
+QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後送入編碼器。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。我們提出加權融合策略，分別編碼table和queries，然後進行加權組合。
+
+具體而言，我們首先分別編碼partial table和所有synthetic questions的拼接：
 \begin{align}
-\mathbf{e}_{\text{table}} &= \text{Encoder}(\mathcal{T}_{partial}), \quad
-\mathbf{e}_{\text{queries}} = \text{Encoder}(q_1 \oplus \cdots \oplus q_k)
+\mathbf{e}_{\text{table}} &= \text{Encoder}(\mathcal{T}_{partial}) \\
+\mathbf{e}_{\text{queries}} &= \text{Encoder}(q_1 \oplus q_2 \oplus \cdots \oplus q_k)
 \end{align}
-最終表示為 $\mathbf{e}_{\mathcal{T}} = w_t \cdot \mathbf{e}_{\text{table}} + w_q \cdot \mathbf{e}_{\text{queries}}$（$w_t + w_q = 1$）。
 
-\textbf{Fixed Weight Fusion (FWF):} 固定權重 $w_t = \alpha$（$\alpha=0.7$）。
+最終的表格表示透過加權融合得到：
+\begin{equation}
+\mathbf{e}_{\mathcal{T}} = w_t \cdot \mathbf{e}_{\text{table}} + w_q \cdot \mathbf{e}_{\text{queries}}
+\end{equation}
+其中 $w_t$ 和 $w_q$ 分別是table和queries的權重，且 $w_t + w_q = 1$。我們設計了兩種權重分配策略：
 
-\textbf{Dynamic Weight Fusion (DWF):} 根據相似度 $s = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{\text{queries}})$ 動態分配：$w_q = \beta \cdot s$，$w_t = 1 - w_q$（$\beta=0.3$）。
+\textbf{Fixed Weight Fusion (FWF):}
+給予table固定權重 $w_t = \alpha$，剩餘權重分配給queries：$w_q = 1-\alpha$。這種方法簡單直觀，透過調整 $\alpha$ 可以控制table和queries在最終表示中的相對重要性（實驗中設置$\alpha=0.7$）。
+
+\textbf{Dynamic Weight Fusion (DWF):}
+根據table和queries之間的語義相似度動態分配權重。我們使用cosine similarity計算相似度：
+\begin{equation}
+s = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{\text{queries}})
+\end{equation}
+
+權重透過相似度計算：
+\begin{equation}
+w_q = \beta \cdot s, \quad w_t = 1 - w_q
+\end{equation}
+其中 $\beta$ 是控制query embedding權重範圍的超參數（實驗中設置$\beta=0.3$）。當table和queries語義相似度高時，賦予queries更大的權重；反之則更依賴table本身的表示。
 
 \section{Experiments}
 \label{sec:experiments}
 
 \subsection{實驗設置}
 
-\textbf{資料集：}Mimo (ch/en)、OTTQA\cite{chenopen}、FetaQA\cite{nan2022fetaqa}、E2E-WTQ\cite{pasupat2015compositional}。\textbf{Baselines：}QGpT\cite{liang-etal-2025-improving-table}。\textbf{實現：}BGE-M3\cite{xiao2023cpack}作為encoder，Llama 3.1 8B-Instruct生成queries，$k=10$，$\alpha=0.2$，FWF中table權重0.7，DWF中$\beta=0.3$。評估指標：Recall@1/5/10。
+\textbf{資料集：}我們在五個廣泛使用的表格檢索基準資料集上評估STAR：
+(1) \textbf{Mimo (ch)}：中文表格檢索資料集；
+(2) \textbf{Mimo (en)}：英文表格檢索資料集；
+(3) \textbf{OTTQA}\cite{chenopen}：開放域表格問答資料集；
+(4) \textbf{FetaQA}\cite{nan2022fetaqa}：基於表格的問答資料集；
+(5) \textbf{E2E-WTQ}\cite{pasupat2015compositional}：端到端的表格問答資料集。
+
+\textbf{Baselines：}我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
+
+\textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3\cite{xiao2023cpack}作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置table權重為0.7；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
 
 \subsection{主要實驗結果}
 
-如表\ref{tab:main_results}所示，STAR在所有五個資料集上均優於QGpT。在E2E-WTQ上，STAR (FWF)的R@1達58.51\%，比QGpT的41.49\%提升17.02個百分點。在Mimo (en)上，STAR (DWF)的R@1達58.89\%，提升8.23個百分點。DWF在Mimo和OTTQA上略優於FWF，驗證了語義自適應權重的有效性。STAR在所有資料集上的一致改進證明了其穩健性。
+% 主要實驗結果表格
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{l*{15}{c}}
+\toprule
+\textbf{Method} &
+\multicolumn{3}{c}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c}{\textbf{Mimo (en)}} &
+\multicolumn{3}{c}{\textbf{OTTQA}} &
+\multicolumn{3}{c}{\textbf{FetaQA}} &
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
+& R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 \\
+\midrule
+QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 \\
+STAR (FWF) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} \\
+STAR (DWF) & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \textbf{79.99} & \textbf{88.08} & \textbf{36.25} & \textbf{54.77} & \textbf{62.21} & \textbf{58.51} & \textbf{85.06} & \textbf{90.06} \\
+\bottomrule
+\end{tabular}
+\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
+\label{tab:main_results}
+\end{table*}
+
+表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果。我們可以觀察到以下幾點：
+
+\textbf{(1) STAR顯著優於QGpT：}在大多數資料集上，STAR的兩個變體都顯著優於QGpT baseline。特別是在E2E-WTQ資料集上表現最為突出，STAR (FWF)在R@1上達到58.51\%，相比QGpT的41.49\%提升了17.02個百分點；在R@5上達到85.89\%，相比QGpT的65.98\%提升了19.91個百分點。在Mimo (en)資料集上，STAR (DWF)在R@1上達到58.89\%，相比QGpT的50.66\%提升了8.23個百分點。這驗證了我們提出的語義聚類和加權融合策略的有效性。
+
+\textbf{(2) FWF與DWF的比較：}兩種加權融合策略在不同資料集上表現相近。在Mimo和OTTQA資料集上，Dynamic Weight Fusion略優於Fixed Weight Fusion，這表明根據語義相似度自適應調整權重確實有效。然而，Fixed Weight Fusion憑藉其簡單性和穩定性，在E2E-WTQ等資料集上也取得了競爭力的結果。
+
+\textbf{(3) 跨資料集的穩健性：}STAR在所有五個資料集上都取得了一致的改進，證明了我們的方法具有良好的泛化能力，能夠處理不同語言（中文、英文）和不同類型的表格檢索任務。
 
 \section{Analysis}
 \label{sec:analysis}
 
 \subsection{消融實驗}
 
-表\ref{tab:ablation}展示了STAR各元件的重要性。移除SCDG後，平均R@1從51.86\%降至47.07\%（-4.79\%），證明語義聚類和聚類引導查詢生成的有效性。移除WF後，R@1降至49.08\%（-2.78\%），驗證了細粒度語義整合的重要性。兩個模組協同使STAR有效表示表格語義。
+% Ablation Study 表格 1
+\begin{table}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
+\toprule
+\textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\midrule
+STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
+\quad w/o SCDG & 47.07 {\scriptsize\color{red}(-4.79)} & 68.43 {\scriptsize\color{red}(-5.51)} & 75.88 {\scriptsize\color{red}(-4.37)} \\
+\quad w/o WF & 49.08 {\scriptsize\color{red}(-2.78)} & 69.69 {\scriptsize\color{red}(-4.25)} & 77.02 {\scriptsize\color{red}(-3.23)} \\
+\bottomrule
+\end{tabular}
+\caption{Ablation study (avg. across five datasets).}
+\label{tab:ablation}
+\end{table}
+
+為了驗證STAR各個元件的有效性，我們進行了消融實驗。表\ref{tab:ablation}展示了五個資料集上的平均Recall指標。
+
+我們比較了以下變體：
+(1) \textbf{STAR (full)}：完整模型，使用Dynamic Weight Fusion；
+(2) \textbf{w/o SCDG}：移除Semantic Clustering and Query Generation模組，使用QGpT的top-k採樣和直接query generation；
+(3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略。
+
+實驗結果表明：
+
+\textbf{(1) SCDG模組的重要性：}移除SCDG模組後（w/o SCDG），平均R@1從51.86\%下降至47.07\%，下降了4.79個百分點。這證明了使用語義聚類方法選擇多樣化實例和引導查詢生成的有效性。
+
+\textbf{(2) Weighted Fusion的貢獻：}移除加權融合策略後（w/o WF），平均R@1從51.86\%下降至49.08\%，下降了2.78個百分點。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
+
+\textbf{(3) 兩個模組的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一模組的變體。SCDG和WF兩個模組共同作用，使STAR能夠有效地表示表格的語義資訊。
 
 \subsection{權重策略分析}
 
-如表\ref{tab:weight_analysis}所示，FWF在$\alpha=0.7$時效能最佳（R@1=51.62\%）。權重過低（0.1）或過高（0.9）均降低效能，表明table和queries需適當平衡。DWF達到R@1=51.86\%，與最佳FWF相當，證明語義自適應權重分配的有效性。
+% Ablation Study 表格 2
+\begin{table}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
+\toprule
+\textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+\midrule
+FWF ($\alpha$=0.1) & 46.61 & 68.76 & 76.22 \\
+FWF ($\alpha$=0.3) & 49.25 & 71.66 & 78.65 \\
+FWF ($\alpha$=0.5) & 51.33 & 73.27 & 79.81 \\
+FWF ($\alpha$=0.7) & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
+FWF ($\alpha$=0.9) & 48.61 & 72.22 & 79.28 \\
+\midrule
+DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
+\bottomrule
+\end{tabular}
+\caption{Weight strategy analysis (avg. across five datasets).}
+\label{tab:weight_analysis}
+\end{table}
+
+表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\alpha \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
+
+實驗結果顯示：
+
+\textbf{(1) 最優固定權重：}在Fixed Weight Fusion中，$\alpha=0.7$（即table權重為0.7，queries權重為0.3）時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
+
+\textbf{(2) Dynamic Fusion的優勢：}Dynamic Weight Fusion取得了與最佳Fixed Weight相當的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制的有效性。這種自適應方法能夠根據不同表格和查詢的語義關係自動調整權重，無需手動調參。
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-本文提出STAR框架，透過語義聚類和加權融合提升表格表示品質。SCDG使用header-aware K-means確保實例的代表性和多樣性，並為不同聚類生成synthetic questions。WF透過Fixed/Dynamic Weight Fusion實現細粒度語義整合。實驗表明STAR在五個資料集上顯著優於QGpT（平均R@1提升6.39個百分點）。未來工作包括：端到端learned weighting、動態聚類數量確定、多模態擴展。
+本文針對現有表格檢索方法中存在的啟發式採樣和粗糙融合問題，提出了STAR框架。STAR透過兩個核心模組提升了表格表示的品質：(1) Semantic Clustering and Query Generation（SCDG）使用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為不同語義聚類分別生成synthetic questions，全面覆蓋表格的語義空間；(2) Weighted Fusion（WF）透過Fixed Weight Fusion和Dynamic Weight Fusion實現table和queries的細粒度語義整合。在五個基準資料集上的實驗表明，STAR在大多數情況下顯著優於QGpT baseline，平均R@1提升了6.39個百分點。消融實驗進一步驗證了各個元件的有效性。
 
-% 插入表格
-\input{tables}
-
-\section*{Acknowledgments}
-This work was supported in part by the National Science and Technology Council, Taiwan, under Grants NSTC 113-2221-E-005-056-MY3 and NSTC 113-2634-F-005-001.
+未來的研究方向包括：(1) 探索端到端的learned weighting機制，透過訓練自動學習最優權重分配；(2) 研究如何動態確定最優的聚類數量 $k$；(3) 將STAR擴展到多模態表格檢索任務。
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
