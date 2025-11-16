@@ -8,6 +8,7 @@
 \usepackage{multirow}
 \usepackage{ulem}
 \usepackage{xcolor}
+\usepackage{graphicx}
 
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
@@ -142,6 +143,13 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \subsection{Semantic Clustering and Query Generation (SCDG)}
 
 QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG模組，結合語義聚類和聚類引導的查詢生成。
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{star_test.png}
+\caption{QGpT與STAR的partial table構建與query generation對比。上方展示QGpT的啟發式top-k採樣方法，下方展示STAR的語義聚類方法，不同顏色代表不同的語義聚類。}
+\label{fig:comparison}
+\end{figure}
 
 \textbf{Header-aware K-means Clustering:}
 我們首先使用預訓練的embedding模型（如BGE-M3）分別對表頭 $\mathcal{H}$ 和每個表格列 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和row embedding $\mathbf{e}_{\mathbf{r}_i}$：
