@@ -160,7 +160,7 @@ QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直
 \end{figure*}
 
 \textbf{Header-aware K-means Clustering:}
-我們首先使用預訓練的embedding模型（如BGE-M3）分別對表頭 $\mathcal{H}$ 和每個表格列 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和row embedding $\mathbf{e}_{\mathbf{r}_i}$：
+我們首先使用預訓練的embedding模型（如BGE-M3）分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
 \begin{align}
 \mathbf{e}_{\mathcal{H}} &= \text{Encoder}(\mathcal{H}) \\
 \mathbf{e}_{\mathbf{r}_i} &= \text{Encoder}(\mathbf{r}_i)
@@ -170,7 +170,7 @@ QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直
 \begin{equation}
 \mathbf{e}_i = \alpha \cdot \mathbf{e}_{\mathcal{H}} + (1-\alpha) \cdot \mathbf{e}_{\mathbf{r}_i}
 \end{equation}
-其中 $\alpha$ 是控制header和row相對重要性的超參數（實驗中設置為0.2）。這種設計使得每個row的表示既包含其自身的語義資訊，也融合了表頭的結構資訊。
+其中 $\alpha$ 是控制header和instance相對重要性的超參數（實驗中設置為0.2）。這種設計使得每個instance的表示既包含其自身的語義資訊，也融合了表頭的結構資訊。
 
 接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
 \begin{equation}
