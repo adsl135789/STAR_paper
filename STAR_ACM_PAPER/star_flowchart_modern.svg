@@ -79,7 +79,7 @@
 
   <!-- Module 1: SCDG -->
   <rect x="50" y="220" width="800" height="180" rx="20" fill="#f7fafc" stroke="#e2e8f0" stroke-width="2"/>
-  <text x="450" y="245" text-anchor="middle" class="module-title">① Semantic Clustering & Query Generation</text>
+  <text x="450" y="245" text-anchor="middle" class="module-title">① Semantic Clustering &amp; Query Generation</text>
 
   <!-- K-means clustering -->
   <g transform="translate(80, 260)">
