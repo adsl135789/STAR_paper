@@ -1,41 +1,27 @@
 % 主要實驗結果表格
 \begin{table*}[t]
 \centering
-\small
-\renewcommand{\arraystretch}{1.05}
-\begin{tabular}{
-    l
-    @{\hskip 8pt}
-    c@{\hskip 4pt}c@{\hskip 4pt}c
-    @{\hskip 8pt}
-    c@{\hskip 4pt}c@{\hskip 4pt}c
-    @{\hskip 8pt}
-    c@{\hskip 4pt}c@{\hskip 4pt}c
-    @{\hskip 8pt}
-    c@{\hskip 4pt}c@{\hskip 4pt}c
-    @{\hskip 8pt}
-    c@{\hskip 4pt}c@{\hskip 4pt}c
-}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l*{15}{c}}
 \toprule
-\multirow{2}{*}[-1ex]{\textbf{Method}} &
-\multicolumn{3}{c@{\hskip 8pt}}{\textbf{Mimo (ch)}} &
-\multicolumn{3}{c@{\hskip 8pt}}{\textbf{Mimo (en)}} &
-\multicolumn{3}{c@{\hskip 8pt}}{\textbf{OTTQA}} &
-\multicolumn{3}{c@{\hskip 8pt}}{\textbf{FetaQA}} &
+\multirow{2}{*}{\textbf{Method}} &
+\multicolumn{3}{c}{\textbf{Mimo (ch)}} &
+\multicolumn{3}{c}{\textbf{Mimo (en)}} &
+\multicolumn{3}{c}{\textbf{OTTQA}} &
+\multicolumn{3}{c}{\textbf{FetaQA}} &
 \multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
-\cmidrule(lr){2-4}
-\cmidrule(lr){5-7}
-\cmidrule(lr){8-10}
-\cmidrule(lr){11-13}
-\cmidrule(l){14-16}
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
 & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 \\
-STAR w/ FWF (0.7) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} \\
-STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \textbf{79.99} & \textbf{88.08} & \textbf{36.25} & \textbf{54.77} & \textbf{62.21} & \textbf{58.51} & \textbf{85.06} & \textbf{90.06} \\
+\midrule
+STAR (FWF) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} \\
+STAR (DWF) & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \textbf{79.99} & \textbf{88.08} & \textbf{36.25} & \textbf{54.77} & \textbf{62.21} & \textbf{58.51} & \textbf{85.06} & \textbf{90.06} \\
 \bottomrule
 \end{tabular}
-\caption{Main results: Comparison of STAR and QGpT across five datasets. Bold indicates the best result, underline indicates the second-best result.}
+\caption{Performance comparison across five datasets. Best results in \textbf{bold}, second-best \uline{underlined}.}
 \label{tab:main_results}
 \end{table*}
 
@@ -43,19 +29,19 @@ STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} 
 % Ablation Study 表格 1
 \begin{table}[t]
 \centering
-\small
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{lccc}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l@{\hskip 12pt}c@{\hskip 12pt}c@{\hskip 12pt}c}
 \toprule
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
-w/o SCDG & 47.07 {\scriptsize(-4.79)} & 68.43 {\scriptsize(-5.51)} & 75.88 {\scriptsize(-4.37)} \\
-w/o WF & 49.08 {\scriptsize(-2.78)} & 69.69 {\scriptsize(-4.25)} & 77.02 {\scriptsize(-3.23)} \\
-QGpT & 45.47 {\scriptsize(-6.39)} & 67.68 {\scriptsize(-6.26)} & 75.04 {\scriptsize(-5.21)} \\
+\addlinespace[2pt]
+\quad w/o SCDG & 47.07 \,{\footnotesize\color{red}(-4.79)} & 68.43 \,{\footnotesize\color{red}(-5.51)} & 75.88 \,{\footnotesize\color{red}(-4.37)} \\
+\quad w/o WF & 49.08 \,{\footnotesize\color{red}(-2.78)} & 69.69 \,{\footnotesize\color{red}(-4.25)} & 77.02 \,{\footnotesize\color{red}(-3.23)} \\
 \bottomrule
 \end{tabular}
-\caption{Ablation study: Effectiveness analysis of each module in STAR (average Recall across five datasets). Numbers in parentheses show the performance drop compared to STAR (full). SCDG: Semantic Clustering and Query Generation; WF: Weighted Fusion.}
+\caption{Ablation study on STAR components (average across five datasets). Red values show performance drop vs. STAR (full).}
 \label{tab:ablation}
 \end{table}
 
@@ -63,20 +49,22 @@ QGpT & 45.47 {\scriptsize(-6.39)} & 67.68 {\scriptsize(-6.26)} & 75.04 {\scripts
 % Ablation Study 表格 2
 \begin{table}[t]
 \centering
-\small
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{lccc}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{l@{\hskip 15pt}c@{\hskip 12pt}c@{\hskip 12pt}c}
 \toprule
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
-STAR w/ FWF (0.1) & 46.61 & 68.76 & 76.22 \\
-STAR w/ FWF (0.3) & 49.25 & 71.66 & 78.65 \\
-STAR w/ FWF (0.5) & 51.33 & 73.27 & 79.81 \\
-STAR w/ FWF (0.7) & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
-STAR w/ FWF (0.9) & 48.61 & 72.22 & 79.28 \\
-STAR w/ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
+FWF ($\alpha$=0.1) & 46.61 & 68.76 & 76.22 \\
+FWF ($\alpha$=0.3) & 49.25 & 71.66 & 78.65 \\
+FWF ($\alpha$=0.5) & 51.33 & 73.27 & 79.81 \\
+FWF ($\alpha$=0.7) & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
+FWF ($\alpha$=0.9) & 48.61 & 72.22 & 79.28 \\
+\midrule
+DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{Weight strategy analysis: Comparison of different Fixed Weight Fusion settings and Dynamic Weight Fusion (average Recall across five datasets). Numbers in parentheses indicate the table weight $\alpha$.}
+\caption{Impact of weight strategies on STAR performance (average across five datasets).}
 \label{tab:weight_analysis}
 \end{table}
+
