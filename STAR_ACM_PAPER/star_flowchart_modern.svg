@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="900" height="650" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#38f9d7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fee140;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Arrow marker -->
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#667eea" />
+    </marker>
+
+    <style>
+      .title { font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; fill: #2d3748; }
+      .label { font-family: 'Arial', sans-serif; font-size: 16px; font-weight: 600; fill: white; }
+      .label-dark { font-family: 'Arial', sans-serif; font-size: 15px; font-weight: 600; fill: #2d3748; }
+      .small { font-family: 'Arial', sans-serif; font-size: 12px; fill: #4a5568; }
+      .tiny { font-family: 'Arial', sans-serif; font-size: 11px; fill: #718096; }
+      .module-title { font-family: 'Arial', sans-serif; font-size: 18px; font-weight: bold; fill: #667eea; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" class="title">STAR Framework</text>
+
+  <!-- Input Section -->
+  <g transform="translate(350, 60)">
+    <!-- Table icon -->
+    <rect x="0" y="0" width="200" height="100" rx="15" fill="url(#grad3)" filter="url(#shadow)"/>
+    <!-- Table grid icon -->
+    <rect x="30" y="20" width="50" height="10" fill="white" opacity="0.9" rx="2"/>
+    <rect x="90" y="20" width="50" height="10" fill="white" opacity="0.9" rx="2"/>
+    <rect x="150" y="20" width="20" height="10" fill="white" opacity="0.9" rx="2"/>
+    <rect x="30" y="35" width="50" height="8" fill="white" opacity="0.7" rx="2"/>
+    <rect x="90" y="35" width="50" height="8" fill="white" opacity="0.7" rx="2"/>
+    <rect x="150" y="35" width="20" height="8" fill="white" opacity="0.7" rx="2"/>
+    <rect x="30" y="47" width="50" height="8" fill="white" opacity="0.7" rx="2"/>
+    <rect x="90" y="47" width="50" height="8" fill="white" opacity="0.7" rx="2"/>
+    <rect x="150" y="47" width="20" height="8" fill="white" opacity="0.7" rx="2"/>
+    <!-- Question mark icon -->
+    <circle cx="35" cy="75" r="12" fill="white" opacity="0.9"/>
+    <text x="35" y="82" text-anchor="middle" style="font-size: 16px; font-weight: bold; fill: #4facfe;">?</text>
+    <text x="100" y="82" text-anchor="middle" class="label">Input Table + Q</text>
+  </g>
+
+  <!-- Arrow down -->
+  <path d="M 450 170 L 450 210" stroke="#667eea" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Module 1: SCDG -->
+  <rect x="50" y="220" width="800" height="180" rx="20" fill="#f7fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="450" y="245" text-anchor="middle" class="module-title">① Semantic Clustering & Query Generation</text>
+
+  <!-- K-means clustering -->
+  <g transform="translate(80, 260)">
+    <rect x="0" y="0" width="180" height="120" rx="12" fill="url(#grad1)" filter="url(#shadow)"/>
+    <!-- Clustering icon - circles grouped -->
+    <circle cx="50" cy="35" r="8" fill="white" opacity="0.9"/>
+    <circle cx="70" cy="35" r="8" fill="white" opacity="0.9"/>
+    <circle cx="60" cy="50" r="8" fill="white" opacity="0.9"/>
+    <circle cx="110" cy="35" r="8" fill="white" opacity="0.8"/>
+    <circle cx="130" cy="35" r="8" fill="white" opacity="0.8"/>
+    <circle cx="120" cy="50" r="8" fill="white" opacity="0.8"/>
+    <!-- Header icon -->
+    <rect x="40" y="65" width="100" height="8" fill="white" opacity="0.9" rx="4"/>
+    <text x="90" y="95" text-anchor="middle" class="label">K-means</text>
+    <text x="90" y="110" text-anchor="middle" class="tiny">Header-aware (α=0.2)</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 270 320 L 310 320" stroke="#667eea" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- LLM Query Generation -->
+  <g transform="translate(320, 260)">
+    <rect x="0" y="0" width="180" height="120" rx="12" fill="url(#grad2)" filter="url(#shadow)"/>
+    <!-- Brain/AI icon -->
+    <circle cx="90" cy="40" r="20" fill="white" opacity="0.9"/>
+    <path d="M 75 40 Q 75 30, 85 30 Q 95 30, 95 40" stroke="#f5576c" stroke-width="2" fill="none"/>
+    <path d="M 95 40 Q 105 40, 105 50" stroke="#f5576c" stroke-width="2" fill="none"/>
+    <path d="M 75 40 Q 75 50, 85 50" stroke="#f5576c" stroke-width="2" fill="none"/>
+    <circle cx="82" cy="38" r="2" fill="#f5576c"/>
+    <circle cx="98" cy="38" r="2" fill="#f5576c"/>
+    <!-- Speech bubbles -->
+    <ellipse cx="70" cy="70" rx="15" ry="8" fill="white" opacity="0.8"/>
+    <ellipse cx="110" cy="70" rx="15" ry="8" fill="white" opacity="0.8"/>
+    <text x="90" y="95" text-anchor="middle" class="label">CGQG</text>
+    <text x="90" y="110" text-anchor="middle" class="tiny">Llama 3.1 8B</text>
+  </g>
+
+  <!-- Arrow -->
+  <path d="M 510 320 L 550 320" stroke="#667eea" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Output: k queries + partial table -->
+  <g transform="translate(560, 260)">
+    <rect x="0" y="0" width="180" height="120" rx="12" fill="url(#grad3)" filter="url(#shadow)" opacity="0.8"/>
+    <!-- Document icons stacked -->
+    <rect x="50" y="25" width="40" height="50" fill="white" opacity="0.9" rx="4"/>
+    <rect x="60" y="20" width="40" height="50" fill="white" opacity="0.95" rx="4"/>
+    <rect x="70" y="15" width="40" height="50" fill="white" opacity="1" rx="4"/>
+    <line x1="75" y1="25" x2="105" y2="25" stroke="#4facfe" stroke-width="1.5"/>
+    <line x1="75" y1="32" x2="105" y2="32" stroke="#4facfe" stroke-width="1.5"/>
+    <line x1="75" y1="39" x2="95" y2="39" stroke="#4facfe" stroke-width="1.5"/>
+    <text x="90" y="90" text-anchor="middle" class="label">k=10</text>
+    <text x="90" y="105" text-anchor="middle" class="tiny">queries + rows</text>
+  </g>
+
+  <!-- Arrow down to Module 2 -->
+  <path d="M 650 390 L 650 430" stroke="#667eea" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Module 2: Weighted Fusion -->
+  <rect x="50" y="440" width="800" height="160" rx="20" fill="#f7fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="450" y="465" text-anchor="middle" class="module-title">② Weighted Fusion</text>
+
+  <!-- Table embedding -->
+  <g transform="translate(120, 480)">
+    <rect x="0" y="0" width="150" height="100" rx="12" fill="url(#grad5)" filter="url(#shadow)"/>
+    <!-- Table icon simplified -->
+    <rect x="30" y="20" width="90" height="30" fill="white" opacity="0.9" rx="6"/>
+    <line x1="30" y1="35" x2="120" y2="35" stroke="#fa709a" stroke-width="2"/>
+    <line x1="75" y1="20" x2="75" y2="50" stroke="#fa709a" stroke-width="2"/>
+    <!-- Down arrow -->
+    <path d="M 75 55 L 75 65" stroke="white" stroke-width="3" fill="none"/>
+    <polygon points="75 68, 70 60, 80 60" fill="white"/>
+    <text x="75" y="88" text-anchor="middle" class="label">E_t</text>
+  </g>
+
+  <!-- Query embedding -->
+  <g transform="translate(310, 480)">
+    <rect x="0" y="0" width="150" height="100" rx="12" fill="url(#grad5)" filter="url(#shadow)"/>
+    <!-- Query docs icon -->
+    <circle cx="55" cy="30" r="8" fill="white" opacity="0.9"/>
+    <circle cx="75" cy="30" r="8" fill="white" opacity="0.9"/>
+    <circle cx="95" cy="30" r="8" fill="white" opacity="0.9"/>
+    <text x="75" y="36" text-anchor="middle" style="font-size: 10px; fill: #fa709a; font-weight: bold;">Q</text>
+    <!-- Down arrow -->
+    <path d="M 75 43 L 75 53" stroke="white" stroke-width="3" fill="none"/>
+    <polygon points="75 56, 70 48, 80 48" fill="white"/>
+    <text x="75" y="76" text-anchor="middle" class="label">E_q</text>
+  </g>
+
+  <!-- Fusion icon -->
+  <g transform="translate(500, 480)">
+    <rect x="0" y="0" width="150" height="100" rx="12" fill="url(#grad1)" filter="url(#shadow)"/>
+    <!-- Merge/combine icon -->
+    <circle cx="55" cy="35" r="12" fill="white" opacity="0.7"/>
+    <circle cx="95" cy="35" r="12" fill="white" opacity="0.7"/>
+    <circle cx="75" cy="35" r="15" fill="white" opacity="0.95"/>
+    <text x="75" y="42" text-anchor="middle" style="font-size: 18px; font-weight: bold; fill: #667eea;">+</text>
+    <text x="75" y="68" text-anchor="middle" class="label" style="font-size: 13px;">FWF/DWF</text>
+    <text x="75" y="84" text-anchor="middle" class="tiny">β=0.3</text>
+  </g>
+
+  <!-- Arrow to output -->
+  <path d="M 660 530 L 700 530" stroke="#667eea" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Final output -->
+  <g transform="translate(710, 490)">
+    <rect x="0" y="0" width="140" height="80" rx="12" fill="url(#grad4)" filter="url(#shadow)"/>
+    <!-- Star/sparkle icon for final representation -->
+    <polygon points="70,20 75,30 85,32 75,38 77,48 70,42 63,48 65,38 55,32 65,30" fill="white" opacity="0.95"/>
+    <circle cx="58" cy="25" r="2" fill="white"/>
+    <circle cx="82" cy="25" r="2" fill="white"/>
+    <text x="70" y="68" text-anchor="middle" class="label" style="font-size: 14px;">Final E</text>
+  </g>
+
+  <!-- Bottom note -->
+  <text x="450" y="630" text-anchor="middle" class="tiny">BGE-M3 | Recall@1/5/10 | 5 Datasets</text>
+</svg>
