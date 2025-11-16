@@ -94,10 +94,11 @@
   <!-- Encoder -->
   <g transform="translate(645, 95)">
     <rect x="0" y="0" width="70" height="40" rx="5" fill="#fef5e7" stroke="#f39c12" stroke-width="2"/>
-    <text x="35" y="15" text-anchor="middle" class="small-label">Encoder</text>
-    <circle cx="25" cy="27" r="5" fill="#f39c12" opacity="0.5"/>
-    <circle cx="35" cy="27" r="5" fill="#f39c12" opacity="0.7"/>
-    <circle cx="45" cy="27" r="5" fill="#f39c12" opacity="0.5"/>
+    <text x="35" y="13" text-anchor="middle" class="small-label">Encoder</text>
+    <!-- Stacked layers to represent multi-layer encoder -->
+    <rect x="15" y="18" width="40" height="4" fill="#f39c12" opacity="0.4" rx="1"/>
+    <rect x="15" y="24" width="40" height="4" fill="#f39c12" opacity="0.6" rx="1"/>
+    <rect x="15" y="30" width="40" height="4" fill="#f39c12" opacity="0.8" rx="1"/>
   </g>
 
   <path d="M 725 115 L 750 115" stroke="#e53e3e" stroke-width="2" fill="none" marker-end="url(#arrow-qgpt)"/>
@@ -105,7 +106,13 @@
   <!-- Output -->
   <g transform="translate(760, 100)">
     <ellipse cx="40" cy="15" rx="40" ry="15" fill="#c6f6d5" stroke="#38a169" stroke-width="2"/>
-    <text x="40" y="20" text-anchor="middle" class="small-label" font-weight="bold">E_table</text>
+    <!-- Vector representation -->
+    <rect x="25" y="9" width="3" height="12" fill="#38a169" opacity="0.6" rx="1"/>
+    <rect x="30" y="9" width="3" height="12" fill="#38a169" opacity="0.8" rx="1"/>
+    <rect x="35" y="9" width="3" height="12" fill="#38a169" opacity="0.6" rx="1"/>
+    <rect x="40" y="9" width="3" height="12" fill="#38a169" opacity="0.7" rx="1"/>
+    <rect x="45" y="9" width="3" height="12" fill="#38a169" opacity="0.6" rx="1"/>
+    <rect x="50" y="9" width="3" height="12" fill="#38a169" opacity="0.8" rx="1"/>
   </g>
 
   <!-- ============ STAR Path (Bottom) ============ -->
@@ -156,17 +163,27 @@
   <!-- Table Encoder -->
   <g transform="translate(515, 340)">
     <rect x="0" y="0" width="70" height="45" rx="5" fill="#fef5e7" stroke="#f39c12" stroke-width="2"/>
-    <text x="35" y="14" text-anchor="middle" class="small-label">Encoder</text>
-    <rect x="15" y="22" width="40" height="8" fill="#3182ce" opacity="0.3" rx="1"/>
-    <text x="35" y="38" text-anchor="middle" class="small-label" font-weight="bold">E_t</text>
+    <text x="35" y="13" text-anchor="middle" class="small-label">Encoder</text>
+    <!-- Stacked layers -->
+    <rect x="15" y="18" width="40" height="3" fill="#f39c12" opacity="0.4" rx="0.5"/>
+    <rect x="15" y="23" width="40" height="3" fill="#f39c12" opacity="0.6" rx="0.5"/>
+    <rect x="15" y="28" width="40" height="3" fill="#f39c12" opacity="0.8" rx="0.5"/>
+    <!-- Arrow down to embedding -->
+    <path d="M 35 32 L 35 35" stroke="#3182ce" stroke-width="1.5" fill="none"/>
+    <polygon points="35,37 33,34 37,34" fill="#3182ce"/>
   </g>
 
   <!-- Query Encoder -->
   <g transform="translate(515, 400)">
     <rect x="0" y="0" width="70" height="45" rx="5" fill="#fef5e7" stroke="#f39c12" stroke-width="2"/>
-    <text x="35" y="14" text-anchor="middle" class="small-label">Encoder</text>
-    <rect x="15" y="22" width="40" height="8" fill="#3182ce" opacity="0.3" rx="1"/>
-    <text x="35" y="38" text-anchor="middle" class="small-label" font-weight="bold">E_q</text>
+    <text x="35" y="13" text-anchor="middle" class="small-label">Encoder</text>
+    <!-- Stacked layers -->
+    <rect x="15" y="18" width="40" height="3" fill="#f39c12" opacity="0.4" rx="0.5"/>
+    <rect x="15" y="23" width="40" height="3" fill="#f39c12" opacity="0.6" rx="0.5"/>
+    <rect x="15" y="28" width="40" height="3" fill="#f39c12" opacity="0.8" rx="0.5"/>
+    <!-- Arrow down to embedding -->
+    <path d="M 35 32 L 35 35" stroke="#3182ce" stroke-width="1.5" fill="none"/>
+    <polygon points="35,37 33,34 37,34" fill="#3182ce"/>
   </g>
 
   <!-- Arrows to WF -->
@@ -195,7 +212,13 @@
   <!-- Output -->
   <g transform="translate(770, 377)">
     <ellipse cx="40" cy="15" rx="40" ry="15" fill="#c6f6d5" stroke="#38a169" stroke-width="2"/>
-    <text x="40" y="20" text-anchor="middle" class="small-label" font-weight="bold">E_table</text>
+    <!-- Vector representation with varying heights -->
+    <rect x="25" y="9" width="3" height="12" fill="#38a169" opacity="0.6" rx="1"/>
+    <rect x="30" y="9" width="3" height="12" fill="#38a169" opacity="0.8" rx="1"/>
+    <rect x="35" y="9" width="3" height="12" fill="#38a169" opacity="0.6" rx="1"/>
+    <rect x="40" y="9" width="3" height="12" fill="#38a169" opacity="0.9" rx="1"/>
+    <rect x="45" y="9" width="3" height="12" fill="#38a169" opacity="0.6" rx="1"/>
+    <rect x="50" y="9" width="3" height="12" fill="#38a169" opacity="0.8" rx="1"/>
   </g>
 
   <!-- Legend -->
