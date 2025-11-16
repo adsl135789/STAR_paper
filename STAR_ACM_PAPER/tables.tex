@@ -1,27 +1,26 @@
 % 主要實驗結果表格
 \begin{table*}[t]
 \centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.1}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.05}
 \begin{tabular}{l*{15}{c}}
 \toprule
-\multirow{2}{*}{\textbf{Method}} &
+\textbf{Method} &
 \multicolumn{3}{c}{\textbf{Mimo (ch)}} &
 \multicolumn{3}{c}{\textbf{Mimo (en)}} &
 \multicolumn{3}{c}{\textbf{OTTQA}} &
 \multicolumn{3}{c}{\textbf{FetaQA}} &
 \multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
 \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
-& \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
+& R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 \\
 \midrule
 QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 \\
-\midrule
 STAR (FWF) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} \\
 STAR (DWF) & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \textbf{79.99} & \textbf{88.08} & \textbf{36.25} & \textbf{54.77} & \textbf{62.21} & \textbf{58.51} & \textbf{85.06} & \textbf{90.06} \\
 \bottomrule
 \end{tabular}
-\caption{Performance comparison across five datasets. Best results in \textbf{bold}, second-best \uline{underlined}.}
+\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
 \label{tab:main_results}
 \end{table*}
 
@@ -29,19 +28,18 @@ STAR (DWF) & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} &
 % Ablation Study 表格 1
 \begin{table}[t]
 \centering
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l@{\hskip 12pt}c@{\hskip 12pt}c@{\hskip 12pt}c}
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
 \toprule
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
-\addlinespace[2pt]
-\quad w/o SCDG & 47.07 \,{\footnotesize\color{red}(-4.79)} & 68.43 \,{\footnotesize\color{red}(-5.51)} & 75.88 \,{\footnotesize\color{red}(-4.37)} \\
-\quad w/o WF & 49.08 \,{\footnotesize\color{red}(-2.78)} & 69.69 \,{\footnotesize\color{red}(-4.25)} & 77.02 \,{\footnotesize\color{red}(-3.23)} \\
+\quad w/o SCDG & 47.07 {\scriptsize\color{red}(-4.79)} & 68.43 {\scriptsize\color{red}(-5.51)} & 75.88 {\scriptsize\color{red}(-4.37)} \\
+\quad w/o WF & 49.08 {\scriptsize\color{red}(-2.78)} & 69.69 {\scriptsize\color{red}(-4.25)} & 77.02 {\scriptsize\color{red}(-3.23)} \\
 \bottomrule
 \end{tabular}
-\caption{Ablation study on STAR components (average across five datasets). Red values show performance drop vs. STAR (full).}
+\caption{Ablation study (avg. across five datasets).}
 \label{tab:ablation}
 \end{table}
 
@@ -49,9 +47,9 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 % Ablation Study 表格 2
 \begin{table}[t]
 \centering
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{l@{\hskip 15pt}c@{\hskip 12pt}c@{\hskip 12pt}c}
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
 \toprule
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
@@ -64,7 +62,7 @@ FWF ($\alpha$=0.9) & 48.61 & 72.22 & 79.28 \\
 DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{Impact of weight strategies on STAR performance (average across five datasets).}
+\caption{Weight strategy analysis (avg. across five datasets).}
 \label{tab:weight_analysis}
 \end{table}
 
