@@ -224,16 +224,19 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 
 \subsection{實驗設置}
 
-\textbf{資料集：}我們在五個廣泛使用的表格檢索基準資料集上評估STAR：
+\subsubsection{Datasets}
+我們在五個廣泛使用的表格檢索基準資料集上評估STAR：
 (1) \textbf{Mimo (ch)}\cite{li-etal-2025-mimotable}：中文表格檢索資料集；
 (2) \textbf{Mimo (en)}\cite{li-etal-2025-mimotable}：英文表格檢索資料集；
 (3) \textbf{OTTQA}\cite{chen2021open}：開放域表格問答資料集；
 (4) \textbf{FetaQA}\cite{nan-etal-2022-fetaqa}：基於表格的問答資料集；
 (5) \textbf{E2E-WTQ}\cite{pasupat-liang-2015-compositional}：端到端的表格問答資料集。
 
-\textbf{Baselines：}我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
+\subsubsection{Baselines}
+我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
 
-\textbf{實現細節：}為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
+\subsubsection{Implementation}
+為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
 
 \subsection{主要實驗結果}
 
