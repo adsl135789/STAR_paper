@@ -117,17 +117,25 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Introduction}
 \label{sec:introduction}
 
-表格檢索（Table Retrieval）在問答系統、資料分析和知識提取等應用中扮演關鍵角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨挑戰。
+表格問答（Table-based Question Answering，Table-QA）近年來受到廣泛關注，從早期針對Wiki風格表格的研究\cite{pasupat2015compositional,zhong2017seq2sql}開始發展。這些早期工作通常假設相關表格已隨問題一同提供，雖然這簡化了問題並允許集中評估對結構化資料的推理能力，但並不符合真實世界開放域使用情境的挑戰。
 
-近期研究開始探索利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。QGpT\cite{liang-etal-2025-improving-table}從表格中抽取部分列（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。然而，QGpT存在兩個關鍵缺陷：
+在實際應用中，使用者通常不會指定要查詢哪個表格，而是用自然語言提問，系統必須先確定哪些表格可能包含相關資訊，然後再進行推理。因此，近期研究開始將表格檢索（Table Retrieval）整合到QA流程中，採用Retriever-Reader架構\cite{chen2017reading}，其中檢索器（retriever）負責識別候選表格，讀取器（reader）則對檢索到的表格執行QA。
 
-\textbf{(1) 啟發式的部分表格採樣：}QGpT採用簡單的top-k策略直接截取表格的前k列作為partial table，可能導致語義冗餘或缺乏代表性，無法充分覆蓋表格的語義多樣性。
+作為開創性研究，NQ-TABLES\cite{herzig2021open}從Natural Questions資料集\cite{kwiatkowski2019natural}中提取自然問題及其對應的答案表格，並將TAPAS\cite{herzig2020tapas}這個基於BERT的表格讀取器轉換為密集表格檢索器（Dense Table Retriever, DTR）。CLTR\cite{pan2021table}則將RCI模型\cite{glass2021capturing}與BM25\cite{robertson2009probabilistic}整合用於表格檢索。然而，這些研究假設答案位於單一、相對簡短的表格內的特定單元格，限制了其在真實世界應用中的通用性，因為回答問題通常需要對多個或冗長的表格進行推理。
 
-\textbf{(2) 粗糙的表示融合策略：}QGpT直接將partial table和synthetic queries拼接後送入編碼器，缺乏對不同資訊來源的細粒度語義整合。
+因此，MMQA\cite{wu2025mimosa}擴展了Table-QA範式，引入結合Text-to-SQL的複雜推理任務，提出多表格檢索（Multi-Table Retrieval, MTR）設定。TableRAG\cite{chen2024tablerag}則採用類似策略，將問題分解為schema層級和cell層級的組成部分，並將表格分段為schema和content部分，實現跨百萬級單元格的可擴展檢索。
 
-針對這些問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），包含兩個核心模組：\textbf{(1) Semantic Clustering and Query Generation (SCDG)}採用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為每個聚類分別生成synthetic questions；\textbf{(2) Weighted Fusion (WF)}透過Fixed Weight Fusion和Dynamic Weight Fusion實現table和queries的細粒度語義整合。
+儘管Table-QA已從簡單的單表格、短答案設定演進到更複雜的多表格推理任務，實際部署仍面臨挑戰。傳統檢索器\cite{karpukhin2020dense,khattab2020colbert}難以在token限制內捕獲完整表格的上下文，而較新的方法\cite{pan2021table,lin2023durepa,chen2024tablerag}主要依賴基於行、列或schema結構的表格分段來改善查詢關鍵詞與表格片段之間的匹配，這些方法專注於關鍵詞級別的匹配，而非學習與使用者問題對齊的語義豐富表示。
 
-在五個基準資料集（Mimo\_ch、Mimo\_en、OTTQA、FetaQA、E2E-WTQ）上的實驗表明，STAR在大多數資料集上顯著優於QGpT，驗證了語義聚類和自適應融合的有效性。
+為解決此問題，QGpT\cite{liang-etal-2025-improving-table}提出利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。然而，QGpT仍存在兩個關鍵缺陷：
+
+\textbf{(1) 啟發式的實例選擇：}QGpT採用簡單的top-k策略直接截取表格的前k列作為partial table，可能導致語義冗餘或缺乏代表性，無法充分覆蓋表格的語義多樣性。
+
+\textbf{(2) 粗糙的表示融合策略：}QGpT直接將partial table和synthetic queries拼接後送入編碼器，缺乏對不同資訊來源（結構化表格與文本查詢）的細粒度語義整合。
+
+針對這些問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），一個輕量級框架，透過語義聚類和加權融合改善表格表示。STAR包含兩個核心模組：\textbf{(1) Semantic Clustering and Query Generation (SCDG)}採用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為每個聚類分別生成synthetic questions以全面覆蓋表格的語義空間；\textbf{(2) Weighted Fusion (WF)}透過Fixed Weight Fusion (FWF)和Dynamic Weight Fusion (DWF)實現table和queries的細粒度語義整合，使STAR能夠捕獲來自結構化和文本來源的互補資訊。
+
+在五個基準資料集（Mimo\_ch、Mimo\_en、OTTQA、FetaQA、E2E-WTQ）上的實驗表明，STAR在大多數資料集上顯著優於QGpT，在某些資料集上R@1提升達17\%，R@5提升達20\%，驗證了語義聚類和加權融合對於建構穩健表格表示的有效性。
 
 
 \section{Related Works}
