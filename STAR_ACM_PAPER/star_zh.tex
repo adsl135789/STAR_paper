@@ -162,7 +162,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \end{figure*}
 
 \textbf{Header-aware K-means Clustering:}
-我們首先使用預訓練的embedding模型分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
+我們首先使用預訓練的編碼器分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
 \begin{align}
 \mathbf{e}_{\mathcal{H}} &= \text{Encoder}(\mathcal{H}) \\
 \mathbf{e}_{\mathbf{r}_i} &= \text{Encoder}(\mathbf{r}_i)
@@ -236,7 +236,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
 
 \subsubsection{Implementation}
-為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
+為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
 
 \subsection{主要實驗結果}
 
