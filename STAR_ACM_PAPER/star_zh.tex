@@ -133,16 +133,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Related Works}
 \label{sec:related}
 
-\subsection{表格檢索}
-早期表格檢索方法主要依賴稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，透過詞彙匹配計算相關性，但難以捕捉深層語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin-etal-2020-dense}透過學習文本的向量表示實現語義匹配，並逐漸被應用於表格檢索任務。
-
-為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法。TaBERT\cite{yin-etal-2020-tabert}設計了專門的注意力機制來建模表格的行列結構，捕捉欄位之間的語義關係。CLTR\cite{pan-etal-2021-cltr}提出透過表格分段（table segmentation）來處理長表格，將表格切分為多個子表格並分別編碼。然而，這些方法主要依賴表格本身的結構資訊，缺乏對使用者查詢意圖的建模，導致在實際應用中的檢索性能受限。
-
-\subsection{查詢生成與資料增強}
-查詢生成（Query Generation）是一種有效的資料增強技術。GPL\cite{wang-etal-2022-gpl}和InPars\cite{bonifacio2022inpars}等方法利用生成式模型為文件產生偽查詢，改善檢索效果。在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM進行合成問題生成，透過從表格中選取partial table並生成相關問題來豐富表格的語義表示。然而，QGpT採用簡單的top-k採樣策略選擇實例，缺乏多樣性；且直接拼接partial table和synthetic queries，無法有效建模不同資訊來源的重要性。
-
-\subsection{聚類方法}
-聚類技術被廣泛應用於資訊檢索中\cite{liu2004cluster}。本文首次將header-aware K-means聚類應用於表格實例選擇，透過考慮表頭資訊的語義聚類來確保選取的實例具有代表性和多樣性。
+表格檢索方法從早期的結構感知編碼（如TaPas\cite{herzig2020tapas}、TaBERT\cite{yin-etal-2020-tabert}、CLTR\cite{pan-etal-2021-cltr}）發展至利用查詢生成進行語義增強。QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM生成synthetic questions來豐富表格語義表示，透過選取partial table並生成相關問題建立查詢-表格橋樑。然而，QGpT採用簡單的top-k採樣策略，缺乏語義多樣性；且直接拼接table和queries，無法細粒度建模不同資訊來源的重要性。本文透過header-aware聚類確保實例多樣性，並提出加權融合策略實現細粒度語義整合。聚類技術雖廣泛應用於資訊檢索\cite{liu2004cluster}，但尚未系統地用於表格實例選擇。
 
 
 \section{Methodology}
