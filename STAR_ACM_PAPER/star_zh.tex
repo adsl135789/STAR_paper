@@ -203,7 +203,7 @@ q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 其中 $w_t$ 和 $w_q$ 分別是table和queries的權重，且 $w_t + w_q = 1$。我們設計了兩種權重分配策略：
 
 \textbf{Fixed Weight Fusion (FWF):}
-給予table固定權重 $w_t = \alpha$，剩餘權重分配給queries：$w_q = 1-\alpha$。這種方法簡單直觀，透過調整 $\alpha$ 可以控制table和queries在最終表示中的相對重要性（實驗中設置$\alpha=0.7$）。
+給予table固定權重 $w_t = \lambda$，剩餘權重分配給queries：$w_q = 1-\lambda$。這種方法簡單直觀，透過調整 $\lambda$ 可以控制table和queries在最終表示中的相對重要性（實驗中設置$\lambda=0.7$）。
 
 \textbf{Dynamic Weight Fusion (DWF):}
 根據table和queries之間的語義相似度動態分配權重。我們使用cosine similarity計算相似度：
@@ -231,7 +231,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 
 \textbf{Baselines：}我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
 
-\textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3\cite{xiao2023cpack}作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置table權重為0.7；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
+\textbf{實現細節：}我們遵循QGpT的實驗設置。使用BGE-M3\cite{xiao2023cpack}作為embedding模型，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@1、Recall@5和Recall@10作為評估指標。
 
 \subsection{主要實驗結果}
 
@@ -318,11 +318,11 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \toprule
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
-FWF ($\alpha$=0.1) & 46.61 & 68.76 & 76.22 \\
-FWF ($\alpha$=0.3) & 49.25 & 71.66 & 78.65 \\
-FWF ($\alpha$=0.5) & 51.33 & 73.27 & 79.81 \\
-FWF ($\alpha$=0.7) & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
-FWF ($\alpha$=0.9) & 48.61 & 72.22 & 79.28 \\
+FWF ($\lambda$=0.1) & 46.61 & 68.76 & 76.22 \\
+FWF ($\lambda$=0.3) & 49.25 & 71.66 & 78.65 \\
+FWF ($\lambda$=0.5) & 51.33 & 73.27 & 79.81 \\
+FWF ($\lambda$=0.7) & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
+FWF ($\lambda$=0.9) & 48.61 & 72.22 & 79.28 \\
 \midrule
 DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
@@ -331,11 +331,11 @@ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \label{tab:weight_analysis}
 \end{table}
 
-表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\alpha \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
+表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\lambda \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
 
 實驗結果顯示：
 
-\textbf{(1) 最優固定權重：}在Fixed Weight Fusion中，$\alpha=0.7$（即table權重為0.7，queries權重為0.3）時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
+\textbf{(1) 最優固定權重：}在Fixed Weight Fusion中，$\lambda=0.7$（即table權重為0.7，queries權重為0.3）時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
 
 \textbf{(2) Dynamic Fusion的優勢：}Dynamic Weight Fusion取得了與最佳Fixed Weight相當的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制的有效性。這種自適應方法能夠根據不同表格和查詢的語義關係自動調整權重，無需手動調參。
 
