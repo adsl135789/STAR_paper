@@ -117,7 +117,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Introduction}
 \label{sec:introduction}
 
-表格檢索（Table Retrieval）在問答系統和資訊檢索等應用中扮演關鍵角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨挑戰。傳統檢索器\cite{karpukhin2020dense}難以在token限制內捕獲完整表格的上下文，而基於表格分段的方法\cite{pan2021table}主要依賴關鍵詞級別的匹配，無法學習與使用者問題對齊的語義豐富表示。
+表格檢索（Table Retrieval）在問答系統和資訊檢索等應用中扮演關鍵角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨挑戰。傳統檢索器\cite{karpukhin-etal-2020-dense}難以在token限制內捕獲完整表格的上下文，而基於表格分段的方法\cite{pan-etal-2021-cltr}主要依賴關鍵詞級別的匹配，無法學習與使用者問題對齊的語義豐富表示。
 
 近期研究QGpT\cite{liang-etal-2025-improving-table}提出利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。具體而言，QGpT從表格中選取部分實例（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。然而，QGpT存在兩個關鍵缺陷：
 
@@ -134,10 +134,10 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \label{sec:related}
 
 \subsection{表格檢索}
-早期表格檢索方法基於稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，但難以捕捉深層語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin2020dense}開始被應用於表格檢索任務。為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法，如TaBERT\cite{yin2020tabert}透過設計專門的注意力機制來建模表格的行列結構。
+早期表格檢索方法基於稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，但難以捕捉深層語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin-etal-2020-dense}開始被應用於表格檢索任務。為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法，如TaBERT\cite{yin-etal-2020-tabert}透過設計專門的注意力機制來建模表格的行列結構。
 
 \subsection{查詢生成與資料增強}
-查詢生成（Query Generation）是一種有效的資料增強技術。GPL\cite{wang2022gpl}提出使用生成式模型為文件生成偽查詢，從而在無標註資料的情況下訓練檢索模型。InPars\cite{bonifacio2022inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM進行合成問題生成，但採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
+查詢生成（Query Generation）是一種有效的資料增強技術。GPL\cite{wang-etal-2022-gpl}提出使用生成式模型為文件生成偽查詢，從而在無標註資料的情況下訓練檢索模型。InPars\cite{bonifacio2022inpars}進一步探索了使用大型語言模型進行查詢生成的可行性。在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM進行合成問題生成，但採用簡單的top-k採樣策略和拼接式融合方法，限制了其表達能力。
 
 \subsection{聚類在資訊檢索中的應用}
 聚類技術被廣泛應用於資訊檢索中以提升檢索效率和效果\cite{liu2004cluster}。本文首次將聚類技術應用於表格實例選擇，以提升partial table的代表性和多樣性。
