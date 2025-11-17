@@ -157,7 +157,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \begin{figure*}[t!]
 \centering
 \includegraphics[width=1.0\textwidth]{star_v4.png}
-\caption{QGpT與STAR的兩階段對比。\textbf{Stage 1:} Instance selection與query generation；\textbf{Stage 2:} Encoding策略。不同顏色代表不同的語義聚類。}
+\caption{QGpT與STAR的兩階段對比。\textbf{Stage 1:} Table sampling與query generation；\textbf{Stage 2:} Encoding策略。不同顏色代表不同的語義聚類。}
 \label{fig:comparison}
 \end{figure*}
 
@@ -341,14 +341,14 @@ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 
 實驗結果顯示：
 
-\textbf{(1) 最優固定權重：}在Fixed Weight Fusion中，$\lambda=0.7$（即table權重為0.7，queries權重為0.3）時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
+\textbf{(1) 最優固定權重：}在Fixed Weight Fusion中，$\lambda=0.7$）時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
 
 \textbf{(2) Dynamic Fusion的優勢：}Dynamic Weight Fusion取得了與最佳Fixed Weight相當的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制的有效性。這種自適應方法能夠根據不同表格和查詢的語義關係自動調整權重，無需手動調參。
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-本文針對現有表格檢索方法中存在的啟發式採樣和粗糙融合問題，提出了STAR框架。STAR透過兩個核心模組提升了表格表示的品質：(1) Semantic Clustering and Query Generation（SCDG）使用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為不同語義聚類分別生成synthetic questions，全面覆蓋表格的語義空間；(2) Weighted Fusion（WF）透過Fixed Weight Fusion和Dynamic Weight Fusion實現table和queries的細粒度語義整合。在五個基準資料集上的實驗表明，STAR在大多數情況下顯著優於QGpT baseline，平均R@1提升了6.39個百分點。消融實驗進一步驗證了各個元件的有效性。
+本文針對現有表格檢索方法中存在的啟發式採樣和粗糙融合問題，提出了STAR框架。STAR透過兩個核心模組提升了表格表示的品質：(1) Semantic Clustering and Query Generation使用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為不同語義聚類分別生成synthetic questions，全面覆蓋表格的語義空間；(2) Weighted Fusion透過Fixed Weight Fusion和Dynamic Weight Fusion實現table和queries的細粒度語義整合。在五個基準資料集上的實驗表明，STAR在大多數情況下顯著優於QGpT baseline，平均R@1提升了6.39個百分點。消融實驗進一步驗證了各個元件的有效性。
 
 未來的研究方向包括：(1) 探索端到端的learned weighting機制，透過訓練自動學習最優權重分配；(2) 研究如何動態確定最優的聚類數量 $k$；(3) 將STAR擴展到多模態表格檢索任務。
 
