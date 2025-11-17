@@ -127,7 +127,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 針對這些問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），透過語義聚類和加權融合改善表格表示。STAR包含兩個核心模組：\textbf{(1) Semantic Clustering and Query Generation (SCDG)}採用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為每個聚類分別生成synthetic questions以全面覆蓋表格的語義空間；\textbf{(2) Weighted Fusion (WF)}分別編碼table和queries，然後透過Fixed Weight Fusion (FWF)或Dynamic Weight Fusion (DWF)進行加權組合，實現細粒度的語義整合。
 
-在五個基準資料集（Mimo\_ch、Mimo\_en、OTTQA、FetaQA、E2E-WTQ）上的實驗表明，STAR在大多數資料集上顯著優於QGpT，在某些資料集上R@1提升達17\%，R@5提升達20\%，驗證了語義聚類和加權融合對於建構穩健表格表示的有效性。
+在五個基準資料集（Mimo\_ch、Mimo\_en、OTTQA、FetaQA、E2E-WTQ）上的實驗表明，STAR在大多數資料集上顯著優於QGpT，驗證了語義聚類和加權融合對於建構穩健表格表示的有效性。
 
 
 \section{Related Works}
