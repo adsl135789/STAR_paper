@@ -155,7 +155,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \begin{figure*}[t]
 \centering
 \includegraphics[width=1.0\textwidth]{star_v3.png}
-\caption{QGpT與STAR的partial table構建與query generation對比。上方展示QGpT的啟發式top-k採樣方法，下方展示STAR的語義聚類方法，不同顏色代表不同的語義聚類。}
+\caption{QGpT與STAR方法對比。上方為QGpT，下方為STAR。\textbf{Stage 1 (Instance Selection \& Query Generation):} QGpT使用啟發式top-k選取instances，STAR使用語義聚類方法（不同顏色代表不同聚類）並為每個聚類生成queries。\textbf{Stage 2 (Encoding):} QGpT將partial table與queries拼接後編碼，STAR分別編碼後進行加權融合。}
 \label{fig:comparison}
 \end{figure*}
 
