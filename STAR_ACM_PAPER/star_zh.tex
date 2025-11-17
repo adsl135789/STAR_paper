@@ -150,12 +150,12 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 \subsection{Semantic Clustering and Query Generation (SCDG)}
 
-如圖\ref{fig:comparison}所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG模組，結合語義聚類和聚類引導的查詢生成。
+如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG模組，結合語義聚類和聚類引導的查詢生成。
 
-\begin{figure*}[t]
+\begin{figure*}[t!]
 \centering
 \includegraphics[width=1.0\textwidth]{star_v3.png}
-\caption{QGpT與STAR方法對比。上方為QGpT，下方為STAR。\textbf{Stage 1 (Instance Selection \& Query Generation):} QGpT使用啟發式top-k選取instances，STAR使用語義聚類方法（不同顏色代表不同聚類）並為每個聚類生成queries。\textbf{Stage 2 (Encoding):} QGpT將partial table與queries拼接後編碼，STAR分別編碼後進行加權融合。}
+\caption{QGpT與STAR的兩階段對比。\textbf{Stage 1:} Instance selection與query generation；\textbf{Stage 2:} Encoding策略。不同顏色代表不同的語義聚類。}
 \label{fig:comparison}
 \end{figure*}
 
@@ -172,7 +172,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \end{equation}
 其中 $\alpha$ 是控制header和instance相對重要性的超參數（實驗中設置為0.2）。這種設計使得每個instance的表示既包含其自身的語義資訊，也融合了表頭的結構資訊。
 
-接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$（如圖\ref{fig:comparison}中不同顏色所示）。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
+接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$（如圖\ref{fig:comparison} Stage 1 中不同顏色所示）。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
 \begin{equation}
 \mathbf{r}_j^* = \arg\min_{\mathbf{r}_i \in C_j} \|\mathbf{e}_i - \boldsymbol{\mu}_j\|^2
 \end{equation}
@@ -188,7 +188,7 @@ q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 
 \subsection{Weighted Fusion}
 
-如圖\ref{fig:comparison}所示，QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後送入編碼器。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。我們提出加權融合策略，分別編碼table和queries，然後進行加權組合。
+如圖\ref{fig:comparison} (Stage 2) 所示，QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後送入編碼器。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。我們提出加權融合策略，分別編碼table和queries，然後進行加權組合。
 
 具體而言，我們首先分別編碼partial table和所有synthetic questions的拼接：
 \begin{align}
