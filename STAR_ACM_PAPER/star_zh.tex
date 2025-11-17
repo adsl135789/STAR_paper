@@ -236,13 +236,15 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
 
 \subsubsection{Implementation}
-為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.5$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
+為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.3$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
 
 \subsection{主要實驗結果}
 
 % 主要實驗結果表格
 \begin{table*}[t]
 \centering
+\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
+\label{tab:main_results}
 \small
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.1}
@@ -262,8 +264,6 @@ STAR (FWF) & \uline{51.36} & \textbf{72.16} & \textbf{78.08} & \uline{58.34} & \
 STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & \uline{85.06} & \textbf{90.06} \\
 \bottomrule
 \end{tabular}
-\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
-\label{tab:main_results}
 \end{table*}
 
 表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果。我們可以觀察到以下幾點：
@@ -282,6 +282,8 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 % Ablation Study 表格 1
 \begin{table}[t]
 \centering
+\caption{Ablation study (avg. across five datasets).}
+\label{tab:ablation}
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
@@ -294,8 +296,6 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \quad w/o Header-aware & XX.XX {\scriptsize\color{red}(-X.XX)} & XX.XX {\scriptsize\color{red}(-X.XX)} & XX.XX {\scriptsize\color{red}(-X.XX)} \\
 \bottomrule
 \end{tabular}
-\caption{Ablation study (avg. across five datasets).}
-\label{tab:ablation}
 \end{table}
 
 為了驗證STAR各個元件的有效性，我們進行了消融實驗。表\ref{tab:ablation}展示了五個資料集上的平均Recall指標。
@@ -318,6 +318,8 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 % Ablation Study 表格 2
 \begin{table}[t]
 \centering
+\caption{Weight strategy analysis (avg. across five datasets).}
+\label{tab:weight_analysis}
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
@@ -333,8 +335,6 @@ FWF ($\lambda$=0.9) & 48.61 & 72.22 & 79.28 \\
 DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{Weight strategy analysis (avg. across five datasets).}
-\label{tab:weight_analysis}
 \end{table}
 
 表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\lambda \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
