@@ -217,7 +217,7 @@ s = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{\text{queries}})
 \begin{equation}
 w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \end{equation}
-其中 $\beta$ 是控制query embedding權重範圍的超參數。當table和queries語義相似度高時，賦予queries更大的權重；反之則更依賴table本身的表示。
+其中 $\beta$ 是控制query embedding權重範圍的超參數。語義相似度反映synthetic queries是否準確覆蓋表格內容：相似度高時，queries能提供更具判別性的查詢導向語義，因此提高其權重可增強檢索對齊；相似度低時，queries可能引入偏差，因此應以table embedding為主要訊號。
 
 \section{Experiments}
 \label{sec:experiments}
