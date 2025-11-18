@@ -230,36 +230,37 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 % 主要實驗結果表格
 \begin{table*}[t]
 \centering
+\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
+\label{tab:main_results}
 \small
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.1}
-\begin{tabular}{l*{15}{c}}
+\begin{tabular}{l*{18}{c}}
 \toprule
 \textbf{Method} &
 \multicolumn{3}{c}{\textbf{Mimo (ch)}} &
 \multicolumn{3}{c}{\textbf{Mimo (en)}} &
 \multicolumn{3}{c}{\textbf{OTTQA}} &
 \multicolumn{3}{c}{\textbf{FetaQA}} &
-\multicolumn{3}{c}{\textbf{E2E-WTQ}} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16}
-& R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 \\
+\multicolumn{3}{c}{\textbf{E2E-WTQ}} &
+\multicolumn{3}{c}{\textbf{Avg.}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13} \cmidrule(lr){14-16} \cmidrule(lr){17-19}
+& R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 & R@1 & R@5 & R@10 \\
 \midrule
-QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 \\
-STAR (FWF) & \uline{51.36} & \textbf{72.16} & \textbf{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \textbf{80.17} & \textbf{88.17} & \uline{36.00} & \textbf{54.92} & \textbf{62.21} & \textbf{58.51} & \textbf{85.89} & \uline{90.04} \\
-STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & \uline{85.06} & \textbf{90.06} \\
+QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 & 45.47 & 67.88 & 75.04 \\
+STAR (FWF) & \uline{51.36} & \textbf{72.16} & \textbf{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \textbf{80.17} & \textbf{88.17} & \uline{36.00} & \textbf{54.92} & \textbf{62.21} & \textbf{58.51} & \textbf{85.89} & \uline{90.04} & \uline{51.61} & \textbf{74.02} & \uline{80.20} \\
+STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & \uline{85.06} & \textbf{90.06} & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
-\label{tab:main_results}
 \end{table*}
 
-表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果。我們可以觀察到以下幾點：
+表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果，以及五個資料集的平均效能。我們可以觀察到以下幾點：
 
-\textbf{(1) STAR顯著優於QGpT：}在大多數資料集上，STAR的兩個變體都顯著優於QGpT baseline。特別是在E2E-WTQ資料集上表現最為突出，STAR (FWF)在R@1上達到58.51\%，相比QGpT的41.49\%提升了17.02個百分點；在R@5上達到85.89\%，相比QGpT的65.98\%提升了19.91個百分點。在Mimo (en)資料集上，STAR (DWF)在R@1上達到58.89\%，相比QGpT的50.66\%提升了8.23個百分點。這驗證了我們提出的語義聚類和加權融合策略的有效性。
+\textbf{(1) STAR整體顯著優於QGpT：}STAR (FWF)透過簡單的固定權重融合策略，在平均效能上即可顯著超越QGpT，在R@1、R@5、R@10三個指標上分別提升了6.14、6.14、5.16個百分點。在部分資料集上，採用Dynamic Weight Fusion可進一步提升效能，例如在Mimo (en)資料集上，STAR (DWF)相比STAR (FWF)在R@1上額外提升了0.55個百分點。這驗證了我們提出的語義聚類和加權融合策略的有效性。
 
-\textbf{(2) FWF與DWF的比較：}兩種加權融合策略在不同資料集上表現相近。在Mimo和OTTQA資料集上，Dynamic Weight Fusion略優於Fixed Weight Fusion，這表明根據語義相似度自適應調整權重確實有效。然而，Fixed Weight Fusion憑藉其簡單性和穩定性，在E2E-WTQ等資料集上也取得了競爭力的結果。
+\textbf{(2) FWF與DWF的比較：}兩種加權融合策略在不同資料集上表現相近，各有優勢。從平均效能來看，Dynamic Weight Fusion在R@1和R@10上略優，而Fixed Weight Fusion在R@5上表現更佳。在Mimo和OTTQA資料集上，Dynamic Weight Fusion略優於Fixed Weight Fusion，這表明根據語義相似度自適應調整權重確實有效。然而，Fixed Weight Fusion憑藉其簡單性和穩定性，在E2E-WTQ等資料集上也取得了競爭力的結果。整體而言，兩種策略的平均R@1僅相差0.25個百分點，展現了相當的效能。
 
-\textbf{(3) 跨資料集的穩健性：}STAR在所有五個資料集上都取得了一致的改進，證明了我們的方法具有良好的泛化能力，能夠處理不同語言（中文、英文）和不同類型的表格檢索任務。
+\textbf{(3) 跨資料集的穩健性：}STAR在所有五個資料集上都取得了一致的改進，證明了我們的方法具有良好的泛化能力，能夠處理不同語言（中文、英文）和不同類型的表格檢索任務。平均提升幅度在R@1、R@5、R@10三個指標上均超過5個百分點，顯示出STAR的穩定性與實用性。
 
 \section{Analysis}
 \label{sec:analysis}
@@ -269,6 +270,8 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 % Ablation Study 表格 1
 \begin{table}[t]
 \centering
+\caption{Ablation study (avg. across five datasets).}
+\label{tab:ablation}
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
@@ -281,8 +284,6 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \quad w/o Header-aware & 50.57 {\scriptsize\color{red}(-1.29)} & 73.63 {\scriptsize\color{red}(-0.31)} & 79.922 {\scriptsize\color{red}(-0.33)} \\
 \bottomrule
 \end{tabular}
-\caption{Ablation study (avg. across five datasets).}
-\label{tab:ablation}
 \end{table}
 
 為了驗證STAR各個元件的有效性，我們進行了消融實驗。表\ref{tab:ablation}展示了五個資料集上的平均Recall指標。
@@ -306,6 +307,8 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 % Ablation Study 表格 2
 \begin{table}[t]
 \centering
+\caption{Weight strategy analysis (avg. across five datasets).}
+\label{tab:weight_analysis}
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
@@ -321,8 +324,6 @@ FWF ($\lambda$=0.9) & 48.61 & 72.22 & 79.28 \\
 DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{Weight strategy analysis (avg. across five datasets).}
-\label{tab:weight_analysis}
 \end{table}
 
 表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置以及Dynamic Weight Fusion。
