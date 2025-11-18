@@ -155,7 +155,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \mathbf{e}_{\mathbf{r}_i} &= \text{Encoder}(\mathbf{r}_i)
 \end{align}
 
-然後，我們將這兩個embedding進行加權結合，構成header-aware representation：
+然後，我們將這兩個embedding進行加權融合，構成header-aware representation：
 \begin{equation}
 \mathbf{e}_i = \alpha \cdot \mathbf{e}_{\mathcal{H}} + (1-\alpha) \cdot \mathbf{e}_{\mathbf{r}_i}
 \end{equation}
@@ -299,7 +299,7 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 
 \textbf{(3) 兩個階段的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一階段的變體。SCQG和WF兩個階段共同作用，使STAR能夠有效地表示表格的語義資訊。
 
-\subsection{Analysis of Fusion Weighting Strategies}
+\subsection{Effect of Fusion Weighting Strategies}
 
 % Ablation Study 表格 2
 \begin{table}[t]
