@@ -133,9 +133,9 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Related Works}
 \label{sec:related}
 
-早期表格檢索方法主要依賴稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，透過詞彙匹配計算相關性，但難以捕捉深層語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin-etal-2020-dense}透過學習文本的向量表示實現語義匹配，並逐漸被應用於表格檢索任務。為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法\cite{herzig2020tapas,yin-etal-2020-tabert}，而近期研究轉向利用查詢生成進行語義增強，透過生成式模型為文件產生偽查詢來改善檢索效果\cite{wang-etal-2022-gpl,bonifacio2022inpars}。在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM生成synthetic questions來豐富表格語義表示。
+早期表格檢索方法主要依賴稀疏檢索技術，如BM25\cite{robertson2009probabilistic}，透過詞彙匹配計算相關性，但難以捕捉深層語義關聯。隨著深度學習的發展，密集檢索方法\cite{karpukhin-etal-2020-dense}透過學習文本的向量表示實現語義匹配，並逐漸被應用於表格檢索任務。為了更好地處理表格的結構特性，一些研究提出了結構感知的表格編碼方法\cite{herzig2020tapas,yin-etal-2020-tabert}，而近期研究轉向利用查詢生成進行語義增強，透過生成式模型為文件產生偽查詢來改善檢索效果\cite{mao-etal-2021-generation,wang-etal-2022-gpl,bonifacio2022inpars}。在表格檢索領域，QGpT\cite{liang-etal-2025-improving-table}首次系統地應用LLM生成synthetic questions來豐富表格語義表示。
 
-然而，表格檢索面臨非結構化文字與結構化表格之間的語義差異，使得查詢-表格對齊（query-table alignment）成為核心挑戰。QGpT採用簡單的top-k採樣策略選擇實例，缺乏語義多樣性；且直接拼接table和queries，無法細粒度建模不同資訊來源的重要性。針對採樣多樣性不足的問題，本文引入聚類技術進行header-aware實例選擇；針對融合策略的粗糙性，我們提出加權融合方法實現細粒度語義整合。
+然而，QGpT採用簡單的top-k採樣策略，缺乏語義多樣性；且直接拼接table和queries，無法細粒度建模不同資訊來源的重要性。本文透過header-aware聚類確保實例多樣性，並提出加權融合策略實現細粒度語義整合。
 
 
 \section{Methodology}
