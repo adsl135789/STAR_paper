@@ -117,7 +117,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Introduction}
 \label{sec:introduction}
 
-表格檢索（Table Retrieval）在問答系統和資訊檢索等應用中扮演關鍵角色。然而，非結構化文字與結構化表格之間的語義差異使得查詢-表格對齊（query-table alignment）面臨挑戰。傳統檢索器\cite{karpukhin-etal-2020-dense}難以在token限制內捕獲完整表格的上下文，無法學習與使用者問題對齊的語義豐富表示。
+表格檢索（Table Retrieval）目標是從大規模表格語料庫中檢索回與使用者自然語言查詢最相關的表格。然而，表格檢索面臨自然語言查詢與結構化表格資料型態之間的語義落差\cite{huang2022mixed}，使得傳統密集檢索方法效果不彰\cite{li-etal-2025-mimotable}。
 
 近期研究QGpT\cite{liang-etal-2025-improving-table}提出利用大型語言模型（LLMs）生成合成問題（synthetic questions）來豐富表格的語義表示。具體而言，QGpT從表格中選取部分實例（partial table）並生成相關問題，試圖在查詢與表格之間建立語義橋樑。然而，QGpT存在兩個關鍵缺陷：
 
