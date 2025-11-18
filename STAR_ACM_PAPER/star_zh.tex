@@ -121,7 +121,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 為了在上述語義落差與長表格情境下改善表格表示，近期研究嘗試透過語義擴增來緩解這些問題。從語料庫端出發，QGpT\cite{liang-etal-2025-improving-table}採用兩階段設計：首先僅選取表格前 $k$ 列構成 partial table，以在 token 限制下取得表格的近似表示；接著並利用LLM為Partial Table 生成 synthetic queries，將結構化的表格內容擴展為自然語言表示，使其更容易與自然語言查詢進行密集語義匹配。然而，QGpT 在兩個關鍵面向上仍有侷限：(1) \textbf{啟發式的實例選擇：}採用簡單的 top-$k$ 策略僅保留表格前 $k$ 列，缺乏對整體表格的代表性；(2) \textbf{粗糙的表示融合策略：}將 partial table 與 synthetic queries 以單一序列拼接後送入同一編碼器，無法區分結構化表格訊號與查詢導向文字訊號的相對重要性，缺乏細粒度的語義整合。
 
-為解決上述問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），在不修改retriever架構的前提下，重新設計表格側的語義聚合與表示方式。STAR包含兩個核心模組：首先，語義聚類與查詢生成模組使用header-aware K-means對列向量聚類，從每個語義群集選取centroid instances形成多樣化partial table，並針對各群集分別生成synthetic questions，以提升對整體表格語義空間的覆蓋；其次，加權融合模組分別編碼並整合partial table與synthetic questions兩種訊號，顯式控制其在最終表格表示中的貢獻。在五個基準資料集上的實驗顯示，STAR在多數設定下均優於QGpT，驗證了語義聚類與加權融合的有效性。
+為解決上述問題，我們提出STAR（\textbf{S}emantic \textbf{T}able \textbf{A}ggregation and \textbf{R}epresentation），在不修改retriever架構的前提下，重新設計表格側的語義聚合與表示方式。STAR分為兩個階段：首先，Semantic Clustering and Query Generation階段使用header-aware K-means對列向量聚類，從每個語義群集選取centroid instances形成多樣化partial table，並針對各群集分別生成synthetic questions，以提升對整體表格語義空間的覆蓋；其次，Weighted Fusion階段分別編碼並整合partial table與synthetic questions兩種訊號，顯式控制其在最終表格表示中的貢獻。在五個基準資料集上的實驗顯示，STAR在多數設定下均優於QGpT，驗證了語義聚類與加權融合的有效性。
 
 
 \section{Related Works}
