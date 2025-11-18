@@ -135,11 +135,11 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Methodology}
 \label{sec:methodology}
 
-給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架包含兩個核心模組：(1) Semantic Clustering and Query Generation (SCDG)，以及 (2) Weighted Fusion (WF)。
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCDG)，以及 (2) Weighted Fusion (WF)。
 
 \subsection{Semantic Clustering and Query Generation (SCDG)}
 
-如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG模組，結合語義聚類和聚類引導的查詢生成。
+如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG階段，結合語義聚類和聚類引導的查詢生成。
 
 \begin{figure*}[t!]
 \centering
@@ -289,16 +289,16 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 
 我們比較了以下變體：
 (1) \textbf{STAR (full)}：完整模型，使用Dynamic Weight Fusion；
-(2) \textbf{w/o SCDG}：移除Semantic Clustering and Query Generation模組，使用QGpT的top-k採樣和直接query generation；
+(2) \textbf{w/o SCDG}：移除Semantic Clustering and Query Generation階段，使用QGpT的top-k採樣和直接query generation；
 (3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略。
 
 實驗結果表明：
 
-\textbf{(1) SCDG模組的重要性：}移除SCDG模組後（w/o SCDG），平均R@1從51.86\%下降至47.07\%，下降了4.79個百分點。這證明了使用語義聚類方法選擇多樣化實例和引導查詢生成的有效性。
+\textbf{(1) SCDG階段的重要性：}移除SCDG階段後（w/o SCDG），平均R@1從51.86\%下降至47.07\%，下降了4.79個百分點。這證明了使用語義聚類方法選擇多樣化實例和引導查詢生成的有效性。
 
 \textbf{(2) Weighted Fusion的貢獻：}移除加權融合策略後（w/o WF），平均R@1從51.86\%下降至49.08\%，下降了2.78個百分點。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
 
-\textbf{(3) 兩個模組的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一模組的變體。SCDG和WF兩個模組共同作用，使STAR能夠有效地表示表格的語義資訊。
+\textbf{(3) 兩個階段的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一階段的變體。SCDG和WF兩個階段共同作用，使STAR能夠有效地表示表格的語義資訊。
 
 \subsection{權重策略分析}
 
