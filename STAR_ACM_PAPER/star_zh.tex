@@ -173,7 +173,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 \end{equation}
 
-這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic queries $\{q_1, q_2, \ldots, q_k\}$，每個query都對應一個特定的語義聚類。相比QGpT僅對partial table生成單一query，我們的cluster-specific生成策略能更全面地覆蓋表格不同聚類所代表的語義方面，從而充當使用者查詢與表格之間的語義橋樑。
+這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic queries $\{q_1, q_2, \ldots, q_k\}$，每個query都對應一個特定的語義聚類。相比QGpT對top-k採樣的partial table生成queries，我們的cluster-specific生成策略能確保queries覆蓋表格不同語義聚類所代表的多樣化方面，從而充當使用者查詢與表格之間的語義橋樑。
 
 \subsection{Weighted Fusion}
 
