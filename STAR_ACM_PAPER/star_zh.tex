@@ -326,11 +326,11 @@ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 
 表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\lambda \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
 
-實驗結果顯示：
+\subsubsection{Fixed Weight Fusion (FWF)}
+在Fixed Weight Fusion中，$\lambda=0.7$時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
 
-\textbf{(1) 最優固定權重：}在Fixed Weight Fusion中，$\lambda=0.7$）時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
-
-\textbf{(2) Dynamic Fusion的優勢：}Dynamic Weight Fusion取得了與最佳Fixed Weight相當的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制的有效性。這種自適應方法能夠根據不同表格和查詢的語義關係自動調整權重，無需手動調參。
+\subsubsection{Dynamic Weight Fusion (DWF)}
+Dynamic Weight Fusion取得了與最佳Fixed Weight相當的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制的有效性。這種自適應方法能夠根據不同表格和查詢的語義關係自動調整權重，無需手動調參。
 
 \section{Conclusion}
 \label{sec:conclusion}
