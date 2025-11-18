@@ -290,7 +290,8 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 我們比較了以下變體：
 (1) \textbf{STAR (full)}：完整模型，使用Dynamic Weight Fusion；
 (2) \textbf{w/o SCQG}：移除Semantic Clustering and Query Generation階段，使用QGpT的top-k採樣和直接query generation；
-(3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略。
+(3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略；
+(4) \textbf{w/o Header-aware}：移除Header-aware K-means clustering中的header資訊，僅使用實例embedding進行聚類。
 
 實驗結果表明：
 
@@ -298,7 +299,7 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 
 \textbf{(2) Weighted Fusion的貢獻：}移除加權融合策略後（w/o WF），平均R@1從51.86\%下降至49.08\%，下降了2.78個百分點。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
 
-\textbf{(3) 兩個階段的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一階段的變體。SCQG和WF兩個階段共同作用，使STAR能夠有效地表示表格的語義資訊。
+\textbf{(3) Header-aware聚類的有效性：}移除header資訊後（w/o Header-aware），平均R@1從51.86\%下降至50.57\%，下降了1.29個百分點。雖然下降幅度相對較小，但這仍然證明了在K-means聚類中融入表頭資訊的重要性。Header-aware設計能夠使聚類過程同時考慮實例的語義內容與表格的結構資訊，從而選出更具代表性的實例，提升整體表格表示的品質。
 
 \subsection{Effect of Fusion Weighting Strategies}
 
