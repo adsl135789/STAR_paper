@@ -335,9 +335,7 @@ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \section{Conclusion}
 \label{sec:conclusion}
 
-本文針對現有表格檢索方法中存在的啟發式採樣和粗糙融合問題，提出了STAR框架。STAR透過兩個核心模組提升了表格表示的品質：(1) Semantic Clustering and Query Generation使用header-aware K-means聚類確保選取的實例具有代表性和多樣性，並為不同語義聚類分別生成synthetic questions，全面覆蓋表格的語義空間；(2) Weighted Fusion透過Fixed Weight Fusion和Dynamic Weight Fusion實現table和queries的細粒度語義整合。在五個基準資料集上的實驗表明，STAR在大多數情況下顯著優於QGpT baseline，平均R@1提升了6.39個百分點。消融實驗進一步驗證了各個元件的有效性。
-
-未來的研究方向包括：(1) 探索端到端的learned weighting機制，透過訓練自動學習最優權重分配；(2) 研究如何動態確定最優的聚類數量 $k$；(3) 將STAR擴展到多模態表格檢索任務。
+本文針對現有表格檢索方法中存在的啟發式採樣和粗糙融合問題，提出了STAR框架。STAR透過兩個階段提升表格表示的品質：Semantic Clustering and Query Generation階段使用header-aware K-means聚類選取多樣化實例並生成cluster-specific synthetic questions；Weighted Fusion階段透過加權融合策略實現table和queries的細粒度語義整合。在五個基準資料集上的實驗表明，STAR在大多數情況下顯著優於QGpT，平均R@1提升6.39個百分點，驗證了語義聚類和加權融合的有效性。
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
