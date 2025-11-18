@@ -139,7 +139,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 \subsection{Semantic Clustering and Query Generation (SCQG)}
 
-如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
+如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k個實例作為partial table。為了解決其實例選擇缺乏多樣性以及查詢生成覆蓋不全面的問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
 
 \begin{figure*}[t!]
 \centering
@@ -148,38 +148,38 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \label{fig:comparison}
 \end{figure*}
 
-\subsubsection{Header-aware K-means Clustering:}
+\subsubsection{Header-aware K-means Clustering}
 我們首先使用預訓練的編碼器分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
 \begin{align}
 \mathbf{e}_{\mathcal{H}} &= \text{Encoder}(\mathcal{H}) \\
 \mathbf{e}_{\mathbf{r}_i} &= \text{Encoder}(\mathbf{r}_i)
 \end{align}
 
-然後，我們將這兩個embedding進行加權組合，構成header-aware representation：
+然後，我們將這兩個embedding進行加權結合，構成header-aware representation：
 \begin{equation}
 \mathbf{e}_i = \alpha \cdot \mathbf{e}_{\mathcal{H}} + (1-\alpha) \cdot \mathbf{e}_{\mathbf{r}_i}
 \end{equation}
-其中 $\alpha$ 是控制header和instance相對重要性的超參數。這種設計使得每個instance的表示既包含其自身的語義資訊，也融合了表頭的結構資訊。
+其中 $\alpha$ 是控制header和instance相對重要性的超參數。此設計結合了實例語義與表頭結構資訊。
 
 接下來，我們對所有實例的embedding $\{\mathbf{e}_1, \mathbf{e}_2, \ldots, \mathbf{e}_n\}$ 進行K-means聚類，將其分為 $k$ 個聚類 $\{C_1, C_2, \ldots, C_k\}$。對於每個聚類 $C_j$，我們選取距離聚類中心最近的實例作為該聚類的代表（centroid instance）：
 \begin{equation}
 \mathbf{r}_j^* = \arg\min_{\mathbf{r}_i \in C_j} \|\mathbf{e}_i - \boldsymbol{\mu}_j\|^2
 \end{equation}
-其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心點）。
+其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心實例）。
 
-\subsubsection{Clustering-Guided Query Generation:}
-對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic question $q_j$：
+\subsubsection{Clustering-Guided Query Generation}
+對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic query $q_j$：
 \begin{equation}
 q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 \end{equation}
 
-這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic questions $\{q_1, q_2, \ldots, q_k\}$，每個問題都對應一個特定的語義聚類。這種方法確保生成的問題能夠全面覆蓋表格的不同語義方面，真正充當使用者查詢與表格之間的語義橋樑。
+這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic queries $\{q_1, q_2, \ldots, q_k\}$，每個query都對應一個特定的語義聚類。相比QGpT僅對partial table生成單一query，我們的cluster-specific生成策略能更全面地覆蓋表格不同聚類所代表的語義方面，從而充當使用者查詢與表格之間的語義橋樑。
 
 \subsection{Weighted Fusion}
 
-如圖\ref{fig:comparison} (Stage 2) 所示，QGpT採用簡單的拼接策略，將partial table和synthetic queries拼接後送入編碼器。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。我們提出加權融合策略，分別編碼table和queries，然後進行加權組合。
+如圖\ref{fig:comparison} (Stage 2) 所示，QGpT採用簡單的串接策略，將partial table和synthetic queries串接後送入同一個編碼器得到單一表示。這種方法將不同資訊來源混合在一起，缺乏對各部分語義重要性的建模。相比之下，我們提出加權融合策略，分別編碼table和queries，然後進行加權融合。
 
-具體而言，我們首先分別編碼partial table和所有synthetic questions的拼接：
+具體而言，我們首先分別編碼partial table（包含表頭與選出的代表實例）和所有synthetic queries的串接：
 \begin{align}
 \mathbf{e}_{\text{table}} &= \text{Encoder}(\mathcal{T}_{partial}) \\
 \mathbf{e}_{\text{queries}} &= \text{Encoder}(q_1 \oplus q_2 \oplus \cdots \oplus q_k)
@@ -204,7 +204,7 @@ s = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{\text{queries}})
 \begin{equation}
 w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \end{equation}
-其中 $\beta$ 是控制query embedding權重範圍的超參數。語義相似度反映synthetic queries是否準確覆蓋表格內容：相似度高時，queries能提供更具判別性的查詢導向語義，因此提高其權重可增強檢索對齊；相似度低時，queries可能引入偏差，因此應以table embedding為主要訊號。
+其中 $\beta$ 是控制query embedding權重範圍的超參數。相似度 $s$ 反映了synthetic queries與table的語義一致性，我們據此動態調整兩者的權重比例。
 
 \section{Experiments}
 \label{sec:experiments}
