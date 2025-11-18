@@ -256,7 +256,7 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 
 表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果，以及五個資料集的平均效能。我們可以觀察到以下幾點：
 
-\textbf{(1) STAR整體顯著優於QGpT：}從平均效能來看，STAR (DWF)在R@1上達到51.86\%，相比QGpT的45.47\%提升了6.39個百分點；STAR (FWF)在R@5上達到74.02\%，相比QGpT的67.88\%提升了6.14個百分點；STAR (DWF)在R@10上達到80.25\%，相比QGpT的75.04\%提升了5.21個百分點。在個別資料集上，改進幅度更為顯著。特別是在E2E-WTQ資料集上表現最為突出，STAR (FWF)在R@1上達到58.51\%，相比QGpT的41.49\%提升了17.02個百分點；在R@5上達到85.89\%，相比QGpT的65.98\%提升了19.91個百分點。在Mimo (en)資料集上，STAR (DWF)在R@1上達到58.89\%，相比QGpT的50.66\%提升了8.23個百分點。這些結果充分驗證了我們提出的語義聚類和加權融合策略的有效性。
+\textbf{(1) STAR整體顯著優於QGpT：}STAR (FWF)透過簡單的固定權重融合策略，在平均效能上即可顯著超越QGpT，在R@1、R@5、R@10三個指標上分別提升了6.14、6.14、5.16個百分點。在部分資料集上，採用Dynamic Weight Fusion可進一步提升效能，例如在Mimo (en)資料集上，STAR (DWF)相比STAR (FWF)在R@1上額外提升了0.55個百分點。這驗證了我們提出的語義聚類和加權融合策略的有效性。
 
 \textbf{(2) FWF與DWF的比較：}兩種加權融合策略在不同資料集上表現相近，各有優勢。從平均效能來看，Dynamic Weight Fusion在R@1和R@10上略優，而Fixed Weight Fusion在R@5上表現更佳。在Mimo和OTTQA資料集上，Dynamic Weight Fusion略優於Fixed Weight Fusion，這表明根據語義相似度自適應調整權重確實有效。然而，Fixed Weight Fusion憑藉其簡單性和穩定性，在E2E-WTQ等資料集上也取得了競爭力的結果。整體而言，兩種策略的平均R@1僅相差0.25個百分點，展現了相當的效能。
 
