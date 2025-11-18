@@ -232,9 +232,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \centering
 \caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
 \label{tab:main_results}
-\small
-\setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.1}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{l*{18}{c}}
 \toprule
 \textbf{Method} &
@@ -251,7 +249,8 @@ QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 3
 STAR (FWF) & \uline{51.36} & \textbf{72.16} & \textbf{78.08} & \uline{58.34} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \textbf{80.17} & \textbf{88.17} & \uline{36.00} & \textbf{54.92} & \textbf{62.21} & \textbf{58.51} & \textbf{85.89} & \uline{90.04} & \uline{51.61} & \textbf{74.02} & \uline{80.20} \\
 STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & \uline{85.06} & \textbf{90.06} & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
 
 表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果，以及五個資料集的平均效能。我們可以觀察到以下幾點：
