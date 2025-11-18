@@ -137,15 +137,14 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \caption{QGpT與STAR的兩階段對比。\textbf{Stage 1:} Instance Selection \& Query Generation；\textbf{Stage 2:} Encoding策略。不同顏色代表不同的語義聚類。}
 \label{fig:comparison}
 \end{figure*}
-給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCQG)，以及 (2) Weighted Fusion (WF)。
-
-\subsection{Semantic Clustering and Query Generation (SCQG)}
-
-如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k個實例作為partial table。為了解決其實例選擇缺乏多樣性以及查詢生成覆蓋不全面的問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
 
 \section{Methodology}
 \label{sec:methodology}
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCQG)，以及 (2) Weighted Fusion (WF)。
 
+\subsection{Semantic Clustering and Query Generation}
+
+如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k個實例作為partial table。為了解決其實例選擇缺乏多樣性以及查詢生成覆蓋不全面的問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
 
 \subsubsection{Header-aware K-means Clustering}
 我們首先使用預訓練的編碼器分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
@@ -191,7 +190,7 @@ q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 其中 $w_t$ 和 $w_q$ 分別是table和queries的權重，且 $w_t + w_q = 1$。我們設計了兩種權重分配策略：
 
 \subsubsection{Fixed Weight Fusion (FWF)}
-給予table固定權重 $w_t = \lambda$，剩餘權重分配給queries：$w_q = 1-\lambda$。這種方法簡單直觀，透過調整 $\lambda$ 可以控制table和queries在最終表示中的相對重要性。
+給予queries固定權重 $w_q = \lambda$，剩餘權重分配給table：$w_t = 1-\lambda$。這種方法簡單直觀，透過調整 $\lambda$ 可以控制table和queries在最終表示中的相對重要性。
 
 \subsubsection{Dynamic Weight Fusion (DWF)}
 根據table和queries之間的語義相似度動態分配權重。我們使用cosine similarity計算相似度：
@@ -203,7 +202,7 @@ s = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{\text{queries}})
 \begin{equation}
 w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \end{equation}
-其中 $\beta$ 是控制query embedding權重範圍的超參數。相似度 $s$ 反映了synthetic queries與table的語義一致性，我們據此動態調整兩者的權重比例。
+其中$\beta \in (0,1]$ 則作為縮放係數，控制相似度變化在權重上的影響強度。相似度 $s$ 反映了synthetic queries與table的語義一致性，我們據此動態調整兩者的權重比例。
 
 \section{Experiments}
 \label{sec:experiments}
@@ -222,7 +221,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
 
 \subsubsection{Implementation}
-為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$。為了探索不同權重配置的影響，我們測試了Fixed Weight Fusion的多個 $\lambda$ 值（0.1, 0.3, 0.5, 0.7, 0.9）；在Dynamic Weight Fusion中，我們設置 $\beta=0.5$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
+為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct生成synthetic query。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$。為了探索不同權重配置的影響，我們測試了Fixed Weight Fusion的多個 $\lambda$ 值（0.1, 0.3, 0.5, 0.7, 0.9）；在Dynamic Weight Fusion中，我們設置 $\beta=0.5$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
 
 \subsection{Main Experimental Results}
 
@@ -246,25 +245,35 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \midrule
 QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 & 45.47 & 67.88 & 75.04 \\
 \midrule
-STAR w/ FWF ($\lambda$=0.1) & 45.32 & 67.40 & 74.84 & 54.97 & 73.21 & 80.56 & 48.46 & 74.25 & 82.70 & 31.60 & 48.88 & 57.51 & 52.70 & 80.08 & 85.48 & 46.61 & 68.76 & 76.22 \\
-STAR w/ FWF ($\lambda$=0.3) & 48.94 & 69.52 & 77.10 & 56.53 & 76.09 & \uline{83.02} & 51.90 & 77.60 & 85.46 & 34.10 & 52.92 & 60.51 & 54.77 & 82.16 & 87.14 & 49.25 & 71.66 & 78.65 \\
-STAR w/ FWF ($\lambda$=0.5) & \uline{51.56} & 71.49 & 76.82 & \textbf{59.10}& \uline{77.30} & \textbf{83.26} & 53.79 & 79.81 & 87.58 & 35.75 & 54.37 & 61.76 & 56.43 & 83.40 & 89.63 & 51.33 & 73.27 & 79.81 \\
-STAR w/ FWF ($\lambda$=0.7) & 51.36 & \uline{72.16} & \textbf{78.08} & 58.40 & 76.98 & 82.50 & \uline{53.84} & \textbf{80.17} & \textbf{88.17} & \uline{36.00} & \textbf{54.92} & \textbf{62.21} & \textbf{58.51} & \textbf{85.89} & \uline{90.04} & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
-STAR w/ FWF ($\lambda$=0.9) & 47.14 & 69.06 & 76.99 & 53.56 & 74.43 & 80.93 & 52.21 & 78.77 & 86.86 & 34.55 & 53.37 & 62.01 & 55.60 & \textbf{85.48} & 89.63 & 48.61 & 72.22 & 79.28 \\
+STAR w/ FWF ($\lambda$=0.1) & 47.14 & 69.06 & 76.99 & 53.56 & 74.43 & 80.93 & 52.21 & 78.77 & 86.86 & 34.55 & 53.37 & 62.01 & 55.60 & \uline{85.48} & 89.63 & 48.61 & 72.22 & 79.28 \\
+STAR w/ FWF ($\lambda$=0.2) & 49.58 & 71.79 & 77.54 & 56.89 & 76.14 & 81.92 & 53.52 & \uline{80.08} & 87.53 & 35.4 & 54.22 & \textbf{62.51} & \uline{56.85} & 85.06 & 89.63 & 50.45 & 73.46 & 79.83 \\
+STAR w/ FWF ($\lambda$=0.3) & 51.36 & \textbf{72.16} & \textbf{78.08} & 58.40 & 76.98 & 82.50 & 53.84 & \textbf{80.17} & \textbf{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \textbf{58.51} & \textbf{85.89} & \uline{90.04} & \uline{51.62} & \textbf{74.02} & 80.20 \\
+STAR w/ FWF ($\lambda$=0.4) & \textbf{52.26} & 71.95 & 77.73 &	58.79 &	\uline{77.56} &	82.66 &	\uline{53.88} &	79.95	& \textbf{88.53} &	35.9	& \textbf{55.02} &	62.11	& \uline{56.85} &	85.06&	\uline{90.04} &	51.54	&73.91&	\uline{80.21} \\
+STAR w/ FWF ($\lambda$=0.5) & 51.56 & 71.49 & 76.82 & \textbf{59.10}& 77.30 & \textbf{83.26} & 53.79 & 79.81 & 87.58 & 35.75 & 54.37 & 61.76 & 56.43 & 83.40 & 89.63 & 51.33 & 73.27 & 79.81 \\
+STAR w/ FWF ($\lambda$=0.6) & 50.18	&71.26	&77.39	&58.79&	77.17&	\uline{83.02} &	53.16&	78.55	&86.86&	34.9&	54.12&	61.16&	54.77&	82.16&	89.63&	50.36&	72.65&	79.61 \\
+STAR w/ FWF ($\lambda$=0.7) & 48.94 & 69.52 & 77.10 & 56.53 & 76.09 & \uline{83.02} & 51.90 & 77.60 & 85.46 & 34.10 & 52.92 & 60.51 & 54.77 & 82.16 & 87.14 & 49.25 & 71.66 & 78.65 \\
+STAR w/ FWF ($\lambda$=0.8) & 47.12	& 68.66	& 76.26	& 55.75	& 75 & 81.34 & 50.32	& 76.15	&84.28	&32.65&	50.72	&59.11	&53.94	&81.33	&85.89	&47.96	&70.37	&77.38 \\
+STAR w/ FWF ($\lambda$=0.9) & 45.32 & 67.40 & 74.84 & 54.97 & 73.21 & 80.56 & 48.46 & 74.25 & 82.70 & 31.60 & 48.88 & 57.51 & 52.70 & 80.08 & 85.48 & 46.61 & 68.76 & 76.22 \\
 \midrule
-STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \uline{77.99} & \uline{58.89} & \textbf{77.72} & 82.89 & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & 85.06 & \textbf{90.06} & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
+STAR w/ DWF & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \uline{58.89} & \textbf{77.72} & 82.89 & \textbf{54.07} & 79.99 & 88.08 & \textbf{36.25} & 54.77 & \uline{62.21} & \textbf{58.51} & 85.06 & \textbf{90.06} & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table*}
 
+
 表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果，以及不同權重融合策略的效能。我們可以觀察到以下幾點：
 
-\textbf{(1) STAR整體顯著優於QGpT：}透過簡單的固定權重融合策略（FWF），STAR即可顯著超越QGpT baseline。以$\lambda=0.7$為例，平均R@1、R@5、R@10分別提升了6.15、6.14、5.16個百分點。在部分資料集上，採用Dynamic Weight Fusion可進一步提升效能，例如在Mimo (en)資料集上，DWF相比FWF ($\lambda=0.7$)在R@1上額外提升了0.49個百分點，達到58.89\%。這驗證了語義聚類和加權融合策略的有效性。
+\subsubsection{(1) STAR整體顯著優於QGpT：}
+STAR框架在所有融合策略下，均顯著優於QGpT baseline。以效能最佳的Dynamic Weight Fusion (DWF) 為例，STAR的平均R@1達到51.86\%，相較於QGpT的45.47\%提升了6.39個百分點。在平均R@5上，STAR也取得了6.06個百分點的顯著提升（73.94\% vs 67.88\%）。這有力地證明了STAR所提出的語義聚類（SCQG）和加權融合（WF）策略，能更有效地捕捉表格語義，從而提升檢索效能。
 
-\textbf{(2) 權重設置的影響：}在Fixed Weight Fusion中，$\lambda=0.7$時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能均會下降，這表明table和queries需要適當的平衡。Dynamic Weight Fusion取得了與最佳Fixed Weight相當甚至略優的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制能夠根據不同表格自動調整權重，無需手動調參。
+\subsubsection{(2) FWF中不同權重反映了資料集特性：}
+分析Fixed Weight Fusion (FWF) 中不同權重 ($\lambda$) 的表現，我們觀察到不同資料集對query權重有不同的偏好。Mimo (ch) 和 Mimo (en) 資料集在 $\lambda$ 介於 0.4 到 0.5 之間時表現最佳。我們認為是因為 Mimo 的表格源自真實世界的 Excel 檔案，結構複雜度較高。在這種情況下，synthetic queries 能更有效地作為使用者查詢與複雜表格之間的語義橋樑。
+相比之下，OTTQA、FetaQA 和 E2E-WTQ 這三個資料集在 $\lambda$ 較低時（如 0.3 或 0.4）取得最佳 FWF 效能。這些資料集的表格結構相對簡單，表格本身的語義已足夠清晰。因此，給予表格本身較高的權重時，能取得更好的檢索效果。
 
-\textbf{(3) 跨資料集的穩健性：}STAR在所有五個資料集上都取得了一致的改進，證明了我們的方法具有良好的泛化能力，能夠處理不同語言（中文、英文）和不同類型的表格檢索任務。
+\subsubsection{(3) DWF展現了強大的適應性與潛力：}
+Dynamic Weight Fusion (DWF) 策略展現了強大的適應性。如表\ref{tab:main_results}所示，DWF在OTTQA、FetaQA和E2E-WTQ上取得了R@1最高分，並且在Mimo (ch) 和 Mimo (en) 上也取得了極具競爭力的次高分。在平均R@1指標上，DWF (51.86\%) 略優於所有FWF配置。
+這證明了DWF僅透過簡單的相似度動態加權，就能有效平衡不同表格的語義來源，並在無需手動調參的情況下，穩健地適應不同資料集的特性。這也啟示了未來可將 DWF 中基於餘弦相似度的簡單加權，替換為更強大的可學習模組，以實現端到端的自適應加權，從而達到更精確的語義融合。
 
 \section{Analysis}
 \label{sec:analysis}
@@ -283,9 +292,10 @@ STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \uline{77.99} & \uline{58.89} & 
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
+\midrule
 \quad w/o SCQG & 47.07 {\scriptsize\color{red}(-4.79)} & 68.43 {\scriptsize\color{red}(-5.51)} & 75.88 {\scriptsize\color{red}(-4.37)} \\
 \quad w/o WF & 49.08 {\scriptsize\color{red}(-2.78)} & 69.69 {\scriptsize\color{red}(-4.25)} & 77.02 {\scriptsize\color{red}(-3.23)} \\
-\quad w/o Header-aware & 50.57 {\scriptsize\color{red}(-1.29)} & 73.63 {\scriptsize\color{red}(-0.31)} & 79.922 {\scriptsize\color{red}(-0.33)} \\
+\quad w/o Header-aware & 50.57 {\scriptsize\color{red}(-1.29)} & 73.63 {\scriptsize\color{red}(-0.31)} & 79.92 {\scriptsize\color{red}(-0.33)} \\
 \bottomrule
 \end{tabular}
 \end{table}
