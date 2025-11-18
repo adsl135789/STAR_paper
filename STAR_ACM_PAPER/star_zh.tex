@@ -87,22 +87,22 @@ This design enables STAR to capture complementary information from structured an
 Experiments on five benchmarks show that STAR achieves consistently higher Recall than QGpT on most datasets, with improvements of up to 17\% on R@1 and 20\% on R@5, demonstrating the effectiveness of semantic clustering and weighted fusion for robust table representation.
 \end{abstract}
 
-%% CCS Concepts
-\begin{CCSXML}
 \begin{CCSXML}
 <ccs2012>
-<concept>
-<concept_id>10002951.10003317.10003318</concept_id>
-<concept_desc>Information systems~Document representation</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-</ccs2012>
+   <concept>
+       <concept_id>10002951.10003317.10003318</concept_id>
+       <concept_desc>Information systems~Document representation</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10002951.10003317.10003338</concept_id>
+       <concept_desc>Information systems~Retrieval models and ranking</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+ </ccs2012>
 \end{CCSXML}
 
 \ccsdesc[500]{Information systems~Document representation}
-\end{CCSXML}
-
-\ccsdesc[500]{Information systems~Information retrieval}
 \ccsdesc[500]{Information systems~Retrieval models and ranking}
 
 %% Keywords
@@ -135,11 +135,11 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \section{Methodology}
 \label{sec:methodology}
 
-給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCDG)，以及 (2) Weighted Fusion (WF)。
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCQG)，以及 (2) Weighted Fusion (WF)。
 
-\subsection{Semantic Clustering and Query Generation (SCDG)}
+\subsection{Semantic Clustering and Query Generation (SCQG)}
 
-如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCDG階段，結合語義聚類和聚類引導的查詢生成。
+如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k列作為partial table，並直接對其生成synthetic queries。這種方法存在兩個問題：(1) 前k列可能語義相似，造成資訊冗餘；(2) 生成的問題可能偏向某些特定的語義方面，無法充分覆蓋表格的語義空間。為了解決這些問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
 
 \begin{figure*}[t!]
 \centering
@@ -148,7 +148,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \label{fig:comparison}
 \end{figure*}
 
-\textbf{Header-aware K-means Clustering:}
+\subsubsection{Header-aware K-means Clustering:}
 我們首先使用預訓練的編碼器分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
 \begin{align}
 \mathbf{e}_{\mathcal{H}} &= \text{Encoder}(\mathcal{H}) \\
@@ -167,7 +167,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 \end{equation}
 其中 $\boldsymbol{\mu}_j$ 是聚類 $C_j$ 的中心向量。透過這種方式，我們構建的partial table $\mathcal{T}_{partial} = \{\mathbf{r}_1^*, \mathbf{r}_2^*, \ldots, \mathbf{r}_k^*\}$ 既保持了語義多樣性（來自不同聚類），又具有代表性（每個聚類的中心點）。
 
-\textbf{Clustering-Guided Query Generation:}
+\subsubsection{Clustering-Guided Query Generation:}
 對於每個聚類 $C_j$，我們構建一個clustered table $\mathcal{T}_j = \{\mathcal{H}, \mathbf{r} \mid \mathbf{r} \in C_j\}$，並使用LLM為其生成一個synthetic question $q_j$：
 \begin{equation}
 q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
@@ -191,10 +191,10 @@ q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 \end{equation}
 其中 $w_t$ 和 $w_q$ 分別是table和queries的權重，且 $w_t + w_q = 1$。我們設計了兩種權重分配策略：
 
-\textbf{Fixed Weight Fusion (FWF):}
+\subsubsection{Fixed Weight Fusion (FWF)}
 給予table固定權重 $w_t = \lambda$，剩餘權重分配給queries：$w_q = 1-\lambda$。這種方法簡單直觀，透過調整 $\lambda$ 可以控制table和queries在最終表示中的相對重要性。
 
-\textbf{Dynamic Weight Fusion (DWF):}
+\subsubsection{Dynamic Weight Fusion (DWF)}
 根據table和queries之間的語義相似度動態分配權重。我們使用cosine similarity計算相似度：
 \begin{equation}
 s = \cos(\mathbf{e}_{\text{table}}, \mathbf{e}_{\text{queries}})
@@ -209,7 +209,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \section{Experiments}
 \label{sec:experiments}
 
-\subsection{實驗設置}
+\subsection{Experimental Setup}
 
 \subsubsection{Datasets}
 我們在五個廣泛使用的表格檢索基準資料集上評估STAR：
@@ -225,7 +225,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 \subsubsection{Implementation}
 為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.5$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
 
-\subsection{主要實驗結果}
+\subsection{Main Experimental Results}
 
 % 主要實驗結果表格
 \begin{table*}[t]
@@ -264,7 +264,7 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 \section{Analysis}
 \label{sec:analysis}
 
-\subsection{消融實驗}
+\subsection{Ablation Study of STAR Components}
 
 % Ablation Study 表格 1
 \begin{table}[t]
@@ -276,9 +276,8 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
-\quad w/o SCDG & 47.07 {\scriptsize\color{red}(-4.79)} & 68.43 {\scriptsize\color{red}(-5.51)} & 75.88 {\scriptsize\color{red}(-4.37)} \\
+\quad w/o SCQG & 47.07 {\scriptsize\color{red}(-4.79)} & 68.43 {\scriptsize\color{red}(-5.51)} & 75.88 {\scriptsize\color{red}(-4.37)} \\
 \quad w/o WF & 49.08 {\scriptsize\color{red}(-2.78)} & 69.69 {\scriptsize\color{red}(-4.25)} & 77.02 {\scriptsize\color{red}(-3.23)} \\
-\quad w/o Header-aware & XX.XX {\scriptsize\color{red}(-X.XX)} & XX.XX {\scriptsize\color{red}(-X.XX)} & XX.XX {\scriptsize\color{red}(-X.XX)} \\
 \bottomrule
 \end{tabular}
 \caption{Ablation study (avg. across five datasets).}
@@ -289,18 +288,18 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 
 我們比較了以下變體：
 (1) \textbf{STAR (full)}：完整模型，使用Dynamic Weight Fusion；
-(2) \textbf{w/o SCDG}：移除Semantic Clustering and Query Generation階段，使用QGpT的top-k採樣和直接query generation；
+(2) \textbf{w/o SCQG}：移除Semantic Clustering and Query Generation階段，使用QGpT的top-k採樣和直接query generation；
 (3) \textbf{w/o WF}：移除Weighted Fusion，使用簡單的拼接策略。
 
 實驗結果表明：
 
-\textbf{(1) SCDG階段的重要性：}移除SCDG階段後（w/o SCDG），平均R@1從51.86\%下降至47.07\%，下降了4.79個百分點。這證明了使用語義聚類方法選擇多樣化實例和引導查詢生成的有效性。
+\textbf{(1) SCQG階段的重要性：}移除SCQG階段後（w/o SCQG），平均R@1從51.86\%下降至47.07\%，下降了4.79個百分點。這證明了使用語義聚類方法選擇多樣化實例和引導查詢生成的有效性。
 
 \textbf{(2) Weighted Fusion的貢獻：}移除加權融合策略後（w/o WF），平均R@1從51.86\%下降至49.08\%，下降了2.78個百分點。這驗證了細粒度的語義整合對於構建高品質表格表示的重要性。
 
-\textbf{(3) 兩個階段的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一階段的變體。SCDG和WF兩個階段共同作用，使STAR能夠有效地表示表格的語義資訊。
+\textbf{(3) 兩個階段的協同效果：}完整的STAR模型在平均R@1上達到51.86\%，顯著優於移除任何單一階段的變體。SCQG和WF兩個階段共同作用，使STAR能夠有效地表示表格的語義資訊。
 
-\subsection{權重策略分析}
+\subsection{Analysis of Fusion Weighting Strategies}
 
 % Ablation Study 表格 2
 \begin{table}[t]
@@ -326,10 +325,10 @@ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 
 表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\lambda \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
 
-\subsubsection{Fixed Weight Fusion (FWF)}
+\textbf{Fixed Weight Fusion (FWF)}
 在Fixed Weight Fusion中，$\lambda=0.7$時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
 
-\subsubsection{Dynamic Weight Fusion (DWF)}
+\textbf{Dynamic Weight Fusion (DWF)}
 Dynamic Weight Fusion取得了與最佳Fixed Weight相當的效能（平均R@1為51.86\%），證明了動態、語義aware的權重分配機制的有效性。這種自適應方法能夠根據不同表格和查詢的語義關係自動調整權重，無需手動調參。
 
 \section{Conclusion}
