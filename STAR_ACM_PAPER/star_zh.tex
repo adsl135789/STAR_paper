@@ -230,6 +230,8 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 % 主要實驗結果表格
 \begin{table*}[t]
 \centering
+\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
+\label{tab:main_results}
 \small
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.1}
@@ -249,8 +251,6 @@ STAR (FWF) & \uline{51.36} & \textbf{72.16} & \textbf{78.08} & \uline{58.34} & \
 STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & \uline{85.06} & \textbf{90.06} \\
 \bottomrule
 \end{tabular}
-\caption{Performance comparison on five datasets. Bold: best, underlined: second-best.}
-\label{tab:main_results}
 \end{table*}
 
 表\ref{tab:main_results}展示了STAR與QGpT在五個資料集上的比較結果。我們可以觀察到以下幾點：
@@ -269,6 +269,8 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 % Ablation Study 表格 1
 \begin{table}[t]
 \centering
+\caption{Ablation study (avg. across five datasets).}
+\label{tab:ablation}
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
@@ -281,8 +283,6 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \quad w/o Header-aware & 50.57 {\scriptsize\color{red}(-1.29)} & 73.63 {\scriptsize\color{red}(-0.31)} & 79.922 {\scriptsize\color{red}(-0.33)} \\
 \bottomrule
 \end{tabular}
-\caption{Ablation study (avg. across five datasets).}
-\label{tab:ablation}
 \end{table}
 
 為了驗證STAR各個元件的有效性，我們進行了消融實驗。表\ref{tab:ablation}展示了五個資料集上的平均Recall指標。
@@ -306,6 +306,8 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 % Ablation Study 表格 2
 \begin{table}[t]
 \centering
+\caption{Weight strategy analysis (avg. across five datasets).}
+\label{tab:weight_analysis}
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
@@ -321,8 +323,6 @@ FWF ($\lambda$=0.9) & 48.61 & 72.22 & 79.28 \\
 DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}
-\caption{Weight strategy analysis (avg. across five datasets).}
-\label{tab:weight_analysis}
 \end{table}
 
 表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置以及Dynamic Weight Fusion。
