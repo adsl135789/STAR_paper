@@ -131,22 +131,21 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 
 然而，QGpT採用簡單的top-k採樣策略，缺乏語義多樣性；且直接拼接table和queries，無法細粒度建模不同資訊來源的重要性。本文透過header-aware聚類確保實例多樣性，並提出加權融合策略實現細粒度語義整合。
 
-
-\section{Methodology}
-\label{sec:methodology}
-
-給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCQG)，以及 (2) Weighted Fusion (WF)。
-
-\subsection{Semantic Clustering and Query Generation (SCQG)}
-
-如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k個實例作為partial table。為了解決其實例選擇缺乏多樣性以及查詢生成覆蓋不全面的問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
-
 \begin{figure*}[t!]
 \centering
 \includegraphics[width=1.0\textwidth]{star_v4.png}
 \caption{QGpT與STAR的兩階段對比。\textbf{Stage 1:} Instance Selection \& Query Generation；\textbf{Stage 2:} Encoding策略。不同顏色代表不同的語義聚類。}
 \label{fig:comparison}
 \end{figure*}
+給定一個包含表頭（header）$\mathcal{H}$ 和 $n$ 個實例（instances）$\{\mathbf{r}_1, \mathbf{r}_2, \ldots, \mathbf{r}_n\}$ 的表格 $\mathcal{T}$，以及一個使用者查詢 $q$，表格檢索的目標是從語料庫 $\mathcal{C}$ 中檢索出與 $q$ 最相關的表格。STAR框架分為兩個階段：(1) Semantic Clustering and Query Generation (SCQG)，以及 (2) Weighted Fusion (WF)。
+
+\subsection{Semantic Clustering and Query Generation (SCQG)}
+
+如圖\ref{fig:comparison} (Stage 1) 所示，QGpT採用簡單的top-k策略選取表格的前k個實例作為partial table。為了解決其實例選擇缺乏多樣性以及查詢生成覆蓋不全面的問題，我們提出SCQG階段，結合語義聚類和聚類引導的查詢生成。
+
+\section{Methodology}
+\label{sec:methodology}
+
 
 \subsubsection{Header-aware K-means Clustering}
 我們首先使用預訓練的編碼器分別對表頭 $\mathcal{H}$ 和每個實例 $\mathbf{r}_i$ 進行編碼，得到header embedding $\mathbf{e}_{\mathcal{H}}$ 和instance embedding $\mathbf{e}_{\mathbf{r}_i}$：
@@ -248,12 +247,12 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 QGpT & 49.81 & 71.06 & 77.23 & 50.66 & 72.35 & 80.80 & 51.45 & 78.14 & 86.68 & 33.95 & 50.87 & 57.86 & 41.49 & 65.98 & 72.61 & 45.47 & 67.88 & 75.04 \\
 \midrule
 STAR w/ FWF ($\lambda$=0.1) & 45.32 & 67.40 & 74.84 & 54.97 & 73.21 & 80.56 & 48.46 & 74.25 & 82.70 & 31.60 & 48.88 & 57.51 & 52.70 & 80.08 & 85.48 & 46.61 & 68.76 & 76.22 \\
-STAR w/ FWF ($\lambda$=0.3) & 48.94 & 69.52 & 77.10 & 56.53 & 76.09 & 83.02 & 51.90 & 77.60 & 85.46 & 34.10 & 52.92 & 60.51 & 54.77 & 82.16 & 87.14 & 49.25 & 71.66 & 78.65 \\
-STAR w/ FWF ($\lambda$=0.5) & 51.56 & 71.49 & 76.82 & 59.10 & 77.30 & 83.26 & 53.79 & 79.81 & 87.58 & 35.75 & 54.37 & 61.76 & 56.43 & 83.40 & 89.63 & 51.33 & 73.27 & 79.81 \\
-STAR w/ FWF ($\lambda$=0.7) & \uline{51.36} & \uline{72.16} & \uline{78.08} & \uline{58.40} & \uline{76.98} & \uline{82.50} & \uline{53.84} & \uline{80.17} & \uline{88.17} & \uline{36.00} & \uline{54.92} & \uline{62.21} & \uline{58.51} & \uline{85.89} & \uline{90.04} & \uline{51.62} & \uline{74.02} & \uline{80.20} \\
-STAR w/ FWF ($\lambda$=0.9) & 47.14 & 69.06 & 76.99 & 53.56 & 74.43 & 80.93 & 52.21 & 78.77 & 86.86 & 34.55 & 53.37 & 62.01 & 55.60 & 85.48 & 89.63 & 48.61 & 72.22 & 79.28 \\
+STAR w/ FWF ($\lambda$=0.3) & 48.94 & 69.52 & 77.10 & 56.53 & 76.09 & \uline{83.02} & 51.90 & 77.60 & 85.46 & 34.10 & 52.92 & 60.51 & 54.77 & 82.16 & 87.14 & 49.25 & 71.66 & 78.65 \\
+STAR w/ FWF ($\lambda$=0.5) & \uline{51.56} & 71.49 & 76.82 & \textbf{59.10}& \uline{77.30} & \textbf{83.26} & 53.79 & 79.81 & 87.58 & 35.75 & 54.37 & 61.76 & 56.43 & 83.40 & 89.63 & 51.33 & 73.27 & 79.81 \\
+STAR w/ FWF ($\lambda$=0.7) & 51.36 & \uline{72.16} & \textbf{78.08} & 58.40 & 76.98 & 82.50 & \uline{53.84} & \textbf{80.17} & \textbf{88.17} & \uline{36.00} & \textbf{54.92} & \textbf{62.21} & \textbf{58.51} & \textbf{85.89} & \uline{90.04} & \uline{51.62} & \textbf{74.02} & \uline{80.20} \\
+STAR w/ FWF ($\lambda$=0.9) & 47.14 & 69.06 & 76.99 & 53.56 & 74.43 & 80.93 & 52.21 & 78.77 & 86.86 & 34.55 & 53.37 & 62.01 & 55.60 & \textbf{85.48} & 89.63 & 48.61 & 72.22 & 79.28 \\
 \midrule
-STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \textbf{77.99} & \textbf{58.89} & \textbf{77.72} & \textbf{82.89} & \textbf{54.07} & \textbf{79.99} & \textbf{88.08} & \textbf{36.25} & \textbf{54.77} & \textbf{62.21} & \textbf{58.51} & \textbf{85.06} & \textbf{90.06} & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
+STAR w/ DWF & \textbf{51.58} & \textbf{72.15} & \uline{77.99} & \uline{58.89} & \textbf{77.72} & 82.89 & \textbf{54.07} & \uline{79.99} & \uline{88.08} & \textbf{36.25} & \uline{54.77} & \textbf{62.21} & \textbf{58.51} & 85.06 & \textbf{90.06} & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \bottomrule
 \end{tabular}%
 }
