@@ -173,7 +173,7 @@ Experiments on five benchmarks show that STAR achieves consistently higher Recal
 q_j = \text{LLM}(\text{Prompt}(\mathcal{T}_j))
 \end{equation}
 
-這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic queries $\{q_1, q_2, \ldots, q_k\}$，每個query都對應一個特定的語義聚類。相比QGpT僅對partial table生成單一query，我們的cluster-specific生成策略能更全面地覆蓋表格不同聚類所代表的語義方面，從而充當使用者查詢與表格之間的語義橋樑。
+這樣，我們為每個表格 $\mathcal{T}$ 生成 $k$ 個synthetic queries $\{q_1, q_2, \ldots, q_k\}$，每個query都對應一個特定的語義聚類。相比QGpT對top-k採樣的partial table生成queries，我們的cluster-specific生成策略能確保queries覆蓋表格不同語義聚類所代表的多樣化方面，從而充當使用者查詢與表格之間的語義橋樑。
 
 \subsection{Weighted Fusion}
 
@@ -278,6 +278,7 @@ STAR (DWF) & \textbf{51.58} & \uline{72.15} & \uline{77.99} & \textbf{58.89} & \
 STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \quad w/o SCQG & 47.07 {\scriptsize\color{red}(-4.79)} & 68.43 {\scriptsize\color{red}(-5.51)} & 75.88 {\scriptsize\color{red}(-4.37)} \\
 \quad w/o WF & 49.08 {\scriptsize\color{red}(-2.78)} & 69.69 {\scriptsize\color{red}(-4.25)} & 77.02 {\scriptsize\color{red}(-3.23)} \\
+\quad w/o Header-aware & 50.57 {\scriptsize\color{red}(-1.29)} & 73.63 {\scriptsize\color{red}(-0.31)} & 79.922 {\scriptsize\color{red}(-0.33)} \\
 \bottomrule
 \end{tabular}
 \caption{Ablation study (avg. across five datasets).}
@@ -307,7 +308,7 @@ STAR (full) & \textbf{51.86} & \textbf{73.94} & \textbf{80.25} \\
 \small
 \renewcommand{\arraystretch}{1.1}
 \begin{tabular}{l@{\hskip 10pt}c@{\hskip 10pt}c@{\hskip 10pt}c}
-\toprule
+\toprule~
 \textbf{Method} & \textbf{R@1} & \textbf{R@5} & \textbf{R@10} \\
 \midrule
 FWF ($\lambda$=0.1) & 46.61 & 68.76 & 76.22 \\
@@ -323,7 +324,7 @@ DWF & \textbf{51.86} & \uline{73.94} & \textbf{80.25} \\
 \label{tab:weight_analysis}
 \end{table}
 
-表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置（table權重 $\lambda \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$）以及Dynamic Weight Fusion。
+表\ref{tab:weight_analysis}展示了不同權重設置對STAR效能的影響。我們測試了五種不同的Fixed Weight Fusion設置以及Dynamic Weight Fusion。
 
 \textbf{Fixed Weight Fusion (FWF)}
 在Fixed Weight Fusion中，$\lambda=0.7$時效能最佳，平均R@1達到51.62\%。當table權重過低（0.1）或過高（0.9）時，效能都會下降，這表明table和queries需要適當的平衡。
