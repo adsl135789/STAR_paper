@@ -223,7 +223,7 @@ w_q = \beta \cdot s, \quad w_t = 1 - w_q
 我們與QGpT\cite{liang-etal-2025-improving-table}進行比較，該方法使用LLM生成synthetic queries進行表格檢索。
 
 \subsubsection{Implementation}
-為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$；在Fixed Weight Fusion中，我們設置 $\lambda=0.7$；在Dynamic Weight Fusion中，我們設置 $\beta=0.5$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
+為了公平比較，我們遵循QGpT的原始實驗設置。使用BGE-M3作為編碼器，使用Llama 3.1 8B-Instruct作為synthetic query generation的生成模型。聚類數量 $k$ 設置為10，因此為每個表格生成10個queries。在header-aware K-means clustering中，我們設置 $\alpha=0.2$。為了探索不同權重配置的影響，我們測試了Fixed Weight Fusion的多個 $\lambda$ 值（0.1, 0.3, 0.5, 0.7, 0.9）；在Dynamic Weight Fusion中，我們設置 $\beta=0.5$。所有實驗使用Recall@K ($K \in \{1, 5, 10\}$)作為評估指標。
 
 \subsection{Main Experimental Results}
 
